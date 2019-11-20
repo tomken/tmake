@@ -19,7 +19,7 @@ class SkipException(Exception):
 
     def __init__(self, message):
         lib.i('skip info: {0}'.format(message))
-        lib.e(' TmakeException --> {0}'.format(message))
+        lib.e(' SkipException --> {0}'.format(message))
 
 
 class NotExisTmakeException(Exception):

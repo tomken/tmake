@@ -5,9 +5,9 @@ from .info.tmake_data import GlobalData as data
 
 from .cmd.tmake_base import Command
 from .utils.tmake_cmake import *
-from .utils.tmake_utils import exec_tmake_command
+from .utils.tmake_utils import *
 
-from .tmake_exception import TmakeException
+from .tmake_exception import *
 
 from .tmake_log import *
 
