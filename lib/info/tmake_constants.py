@@ -1,0 +1,35 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
+TMAKE_VERSION = '1.0.0'
+
+# build config
+CONFIG_RELEASE = 'release'
+CONFIG_DEBUG = 'debug'
+
+# platform define
+PLATFORM_WINDOWS = 'windows'
+PLATFORM_MAC = 'mac'
+PLATFORM_LINUX = 'linux'
+PLATFORM_ANDROID = 'android'
+PLATFORM_IOS = 'ios'
+PLATFORM_ALL = [PLATFORM_WINDOWS, PLATFORM_MAC, PLATFORM_LINUX,
+                PLATFORM_ANDROID, PLATFORM_IOS]
+
+# CPU define
+TARGET_CPU_X86 = 'x86'
+TARGET_CPU_X64 = 'x64'
+
+TARGET_CPU_ARMEABI = 'armeabi'
+TARGET_CPU_ARMEABI_V7A = 'armeabi-v7a'
+TARGET_CPU_ARM64_V8A = 'arm64-v8a'
+TARGET_CPU_MIPS = 'mips'
+TARGET_CPU_MIPS64 = 'mips64'
+TARGET_CPU_X86_64 = 'x86_64'
+
+TARGET_CPU_OS = 'os'
+TARGET_CPU_SIMULATOR = 'simulator'
+TARGET_CPU_FUSION = 'fusion'
+TARGET_CPU_ARMV7 = 'armv7'
+TARGET_CPU_I386 = 'i386'
+TARGET_CPU_ARM64 = 'arm64'
