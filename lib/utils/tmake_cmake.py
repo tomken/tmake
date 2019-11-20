@@ -6,8 +6,20 @@ cmake helper file
 
 import lib
 
+from lib.utils.tmake_project_parser import get_project_list, get_project_max_deep
+
 def check_cmake():
     return True
+
+def __parse_project():
+    """
+    解析project，不成功给出提示
+    :return:
+    """
+    if not lib.data.parse_project():
+        lib.e("work path = " + str(lib.data.arguments.work_path()))
+        raise lib.TmakeException('project parse failed, please ensure work path is right!')
+
 
 def general_cmake_info(arch, write_file):
     """
@@ -28,8 +40,28 @@ def general_cmake_info(arch, write_file):
                 print "start " + project.folder
                 have_build.add(project.folder)
                 lib.data.current_project = project
-                if abtor.data.use_cmakelist:
+                if lib.data.use_cmakelist:
                     write_file = False
                 acg = load_cmake_plugin_and_generate(lib.data.target, arch, write_file)
                 acg_list.append(acg)
     return acg_list
+
+def load_cmake_plugin_and_generate(target, arch, write_to_file=True):
+    """
+    load cmake plugin and generate CMakeList.txt
+    """
+    import_cmd = "import lib.cmake_gens.tmake_cmake_generator_" + target
+    call_cmd = "lib.cmake_gens.tmake_cmake_generator_" + target + ".cmake_plugin_init(arch)"
+
+    try:
+        exec import_cmd
+    except ImportError:
+        raise lib.TmakeException("The target:" + target + " is not support! Please check your -t params!")
+    acg = eval(call_cmd)
+    lib.data.action_mgr.run_befor_action(ABTOR_ACTION_CMAKE_LISTS, abtor.data, acg)
+    acg.generate()
+    lib.data.action_mgr.run_after_action(ABTOR_ACTION_CMAKE_LISTS, abtor.data, acg)
+    if write_to_file:
+        lib.write_entire_file(os.path.join(acg.path.build_path, CMAKE_SCRIPT_FILE_NAME), acg.cmake_text)
+    lib.data.action_mgr.run_befor_action(ABTOR_ACTION_PUBLISH_PROJECT, abtor.data, acg)
+    return acg

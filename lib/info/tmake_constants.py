@@ -7,6 +7,13 @@ TMAKE_VERSION = '1.0.0'
 CONFIG_RELEASE = 'release'
 CONFIG_DEBUG = 'debug'
 
+ALLOW_LINK_STYLE_LIST = ["static", "dynamic", "framework"]
+
+SHARED_SUFFIX = "_shared"
+
+BUILD_INSTALL_PREFIX = 'export'
+BUILD_OUTPUT_NAME = 'bin'
+
 # platform define
 PLATFORM_WINDOWS = 'windows'
 PLATFORM_MAC = 'mac'

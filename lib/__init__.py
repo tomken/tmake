@@ -6,6 +6,7 @@ from .info.tmake_data import GlobalData as data
 from .cmd.tmake_base import Command
 from .utils.tmake_cmake import *
 from .utils.tmake_utils import *
+from .utils.tmake_project_parser import parse as project_parse
 
 from .tmake_exception import *
 

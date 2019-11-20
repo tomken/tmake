@@ -74,3 +74,10 @@ def get_archs():
         if lib.TARGET_CPU_FUSION in archs and lib.data.arguments.tmake_cmd() in ["build", "clean", "project"]:
             archs = lib.TARGET_IOS_CPU_ALL
     return archs
+
+def read_all_from_file(full_path):
+    fd = open(full_path, 'rb')
+    result = fd.read()
+    fd.close()
+    return result
+
