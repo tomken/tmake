@@ -1,0 +1,5 @@
+#!/bin/bash
+
+TMAKE_PATH=$(cd `dirname $0`; pwd)
+python $TMAKE_PATH/tmake.py $TMAKE_PATH $@
+exit $?
