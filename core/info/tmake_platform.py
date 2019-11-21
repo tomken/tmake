@@ -36,7 +36,7 @@ class PlatformInfo(object):
         return 'Linux' in platform.system()
 
     @staticmethod
-    def is_mac_syplstem():
+    def is_mac_system():
         """is mac system"""
         return not PlatformInfo.is_linux_system() and not PlatformInfo.is_windows_system()
 
