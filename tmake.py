@@ -1,8 +1,8 @@
 #!/usr/bin/python2
 # -*- coding: UTF-8 -*-
 
-import lib
+import core
 
 if __name__ == "__main__":
-    TMAKE_MAIN = lib.Main()
+    TMAKE_MAIN = core.Main()
     TMAKE_MAIN.run()

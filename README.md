@@ -9,13 +9,16 @@ Tmake 是一个用 python 包装 CMake 的跨平台构建脚本结合，易的�
 
 ### 本地使用
 
-下载源码
+**下载源码**
+
 ```clone https://github.com/tomken/tmake.git YourFolder```
 
-编写工程配置
-[模板](https://llvm.org/) 
+**编写工程配置**
 
-示例构建 XCode 工程
+[模板](https://github.com/tomken/tmake.git) 
+
+**示例构建 XCode 工程**
+
 ```YourFolder/tmake project xcode open```
 
 ### 命令
