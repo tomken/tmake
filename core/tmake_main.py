@@ -15,7 +15,7 @@ log_attributes = core.get_default_buffer_info()
 class Main(object):
 
     def __init__(self):
-        pass
+        core.data.action_mgr = core.ActionManager()
 
     def run(self):
         try:

@@ -4,6 +4,8 @@
 print tmake verson
 """
 
+import os
+
 import core
 from core.utils.tmake_cmake import *
 
@@ -51,12 +53,12 @@ class CommandProject(core.Command):
                 all_text += acg.cmake_text
             last_acg = acg_list[-1]
             if not core.data.use_cmakelist:
-                cmake_path = os.path.join(last_acg.path.project_path, CMAKE_SCRIPT_FILE_NAME)
+                cmake_path = os.path.join(last_acg.path.project_path, core.CMAKE_SCRIPT_FILE_NAME)
                 core.write_entire_file(cmake_path, all_text)
-                cmake_cache_path = os.path.join(last_acg.path.project_path, CMAKE_CACHE_FILE_NAME)
+                cmake_cache_path = os.path.join(last_acg.path.project_path, core.CMAKE_CACHE_FILE_NAME)
             else:
-                cmake_path = os.path.join(last_acg.path.project_folder, CMAKE_SCRIPT_FILE_NAME)
-                cmake_cache_path = os.path.join(last_acg.path.project_folder, CMAKE_CACHE_FILE_NAME)
+                cmake_path = os.path.join(last_acg.path.project_folder, core.CMAKE_SCRIPT_FILE_NAME)
+                cmake_cache_path = os.path.join(last_acg.path.project_folder, core.CMAKE_CACHE_FILE_NAME)
 
             # 删除cache文件
             if os.path.exists(cmake_cache_path):

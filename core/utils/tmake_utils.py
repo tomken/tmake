@@ -113,10 +113,10 @@ def reset_deps(deps):
             dep_name, dep_version, custom_link_name = parse_dep(dep)
             if "windows" in core.data.target and dep_version != "local":
                 if core.SHARED_SUFFIX not in dep_name:
-                    ret = is_library_exist(dep_name, dep_version, abtor.data.target, abtor.data.arch, "abtor.xml")
+                    ret = is_library_exist(dep_name, dep_version, core.data.target, abcoretor.data.arch, "tmake.xml")
                     if not ret:
                         new_name = dep_name + core.SHARED_SUFFIX
-                        ret = is_library_exist(new_name, dep_version, abtor.data.target, abtor.data.arch, "abtor.xml")
+                        ret = is_library_exist(new_name, dep_version, core.data.target, abcoretor.data.arch, "tmake.xml")
                         if ret:
                             dep_name = new_name
             if custom_link_name:
@@ -205,3 +205,73 @@ def which(cmd, mode=os.F_OK | os.X_OK, path=None):
                 if _access_check(name, mode):
                     return name
     return None
+
+def flat_path_list(l):
+    if type(l) != list:
+        return ""
+    temp = []
+    for v in l:
+        v = flat_path_single(v)
+        if v in temp:
+            temp.remove(v)
+        temp.append(v)
+
+    ret = " "
+    for v in temp:
+        ret += " \"" + v + "\" "
+    return ret
+
+
+def flat_cxx_defines(defines, is_global=True):
+    """flat defines to string"""
+    ret = ""
+
+    if defines and isinstance(defines, list):
+        for define in defines:
+            define = define.strip()
+            if len(define) > 0:
+                if is_global:
+                    ret += ' -D' + define + ' '
+                else:
+                    ret += ' ' + define + ' '
+        ret += " "
+    return ret
+
+def build_source_group_by_list(file_list, start_group_name, base_dir):
+    gs = {}
+    for p in file_list:
+        dir_name = os.path.dirname(p)
+        temp = base_dir
+        while "/" in temp or "\\" in temp:
+            if dir_name.startswith(temp):
+                dir_name = dir_name[len(temp):]
+                break
+            temp = os.path.dirname(temp)
+            if temp.endswith(":/") or temp.endswith(":\\") or temp == "/" or temp == "\\":
+                break
+        group_name = start_group_name + "/" + dir_name.replace('\\', '/')
+        group_name = group_name.replace('/', '\\\\')
+        if group_name not in gs:
+            gs[group_name] = ""
+        gs[group_name] = gs[group_name] + " \"" + flat_path_single(p) + "\" "
+    return gs
+
+def sort_versions(versions, asc=True):
+    """
+    对集合里的version信息排序，默认升序
+    :param versions:
+    :return:
+    """
+    from distutils.version import LooseVersion
+    for i in range(0, len(versions)):
+        index = len(versions) - 1 - i
+        for j in range(0, index):
+            if (asc and LooseVersion(versions[j + 1]) < LooseVersion(versions[j])) \
+                    or (not asc and LooseVersion(versions[j + 1]) > LooseVersion(versions[j])):
+                temp = versions[j]
+                versions[j] = versions[j + 1]
+                versions[j + 1] = temp
+
+def flat_path_single(path):
+    path = path.replace('\\', '/')
+    return path

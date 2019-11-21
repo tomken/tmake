@@ -1,4 +1,6 @@
 
+from .actions.tmake_action import ActionManager, Action
+
 from .info.tmake_constants import *
 from .info.tmake_platform import PlatformInfo
 from .info.tmake_info import GlobalData as data

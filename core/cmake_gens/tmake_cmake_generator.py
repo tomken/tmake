@@ -7,6 +7,7 @@ cmake generator file
 2、https://cmake.org/cmake/help/v3.5/prop_tgt/RESOURCE.html 在cmake官网搜索可用的方式。
 """
 import os
+import subprocess
 
 import core
 
@@ -21,10 +22,6 @@ from core.utils import tmake_process_utils as process_utils
 
 from .tmake_cmakelists import recover_cmakelists, copy_bin_to_export, move_header_files, arrange_dir, \
     delete_empty_dir, copy_libs_to_export, change_cmakelists_output
-
-
-CMAKE_SCRIPT_FILE_NAME = 'CMakeLists.txt'
-CMAKE_CACHE_FILE_NAME = 'CMakeCache.txt'
 
 # format info:: 0:name, 1:cmake_min_version, 2:bin, 3:export, 4:target, 5:build_config
 CMAKE_HEADER_TEMPLATE = """
@@ -704,7 +701,7 @@ class CMakeGenerator(object):
             # if ret != 0:
             #     raise core.TmakeException('Set CMAKE_INSTALL_PREFIX failed! return code is {}'.format(ret))
 
-        ret = core.subprocess.call(command_text, shell=not PlatformInfo.is_windows_system())
+        ret = subprocess.call(command_text, shell=not PlatformInfo.is_windows_system())
         if core.data.use_cmakelist:
             recover_cmakelists(self.path.project_folder)
 
@@ -870,7 +867,7 @@ class CMakeGenerator(object):
 
 
             pre_command_text = tmake_utils.get_cd_command() + " \"" + self.path.build_path + "\" && " + pre_command_text
-            ret = core.subprocess.call(pre_command_text, shell=True)
+            ret = subprocess.call(pre_command_text, shell=True)
             if ret != 0:
                 raise core.TmakeException('Set CMAKE_INSTALL_PREFIX failed! return code is {}'.format(ret))
 
@@ -885,7 +882,7 @@ class CMakeGenerator(object):
         self.__do_rm_build_bin_dir()
         # shell=xx，windows的线上构建报错，不要修改为false
         #ret = core.subprocess.call(command, shell=True)
-        ret = core.subprocess.call(command, shell=True)
+        ret = subprocess.call(command, shell=True)
         if ret != 0:
             raise core.TmakeException('build failed! return code is {}'.format(ret))
         if core.data.use_cmakelist or core.data.use_proj_cmakelist:

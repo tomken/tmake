@@ -8,6 +8,8 @@ import core
 
 from core.utils.tmake_project_parser import get_project_list, get_project_max_deep
 
+from core.actions.tmake_action import *
+
 def check_cmake():
     return True
 
@@ -66,3 +68,9 @@ def load_cmake_plugin_and_generate(target, arch, write_to_file=True):
         core.write_entire_file(os.path.join(acg.path.build_path, CMAKE_SCRIPT_FILE_NAME), acg.cmake_text)
     core.data.action_mgr.run_befor_action(TMAKE_ACTION_PUBLISH_PROJECT, core.data, acg)
     return acg
+
+def run_cmake_project(acg, cmake_list_path, name):
+    """call cmake project"""
+    core.data.action_mgr.run_befor_action(TMAKE_ACTION_CMAKE_PROJECT, core.data, acg)
+    acg.make_project(cmake_list_path, name)
+    core.data.action_mgr.run_after_action(TMAKE_ACTION_CMAKE_PROJECT, core.data, acg)

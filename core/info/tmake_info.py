@@ -30,6 +30,8 @@ class Data(object):
         self.cmake_path = None
         self.environment = EnvironmentInfo(self.arguments.get_opt("vs"))
         self.arch = ""
+        self.use_cmakelist = False
+        self.use_proj_cmakelist = False
         self.__init_current_info()
 
     def __init_current_info(self):
