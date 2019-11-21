@@ -4,3 +4,7 @@ __pycache__/
 *$py.class
 
 .vscode/*
+
+demo/simple1/build
+demo/simple1/project
+demo/simple1/local_export

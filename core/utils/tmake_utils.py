@@ -3,6 +3,8 @@
 
 import os
 import sys
+import shutil
+import json
 
 import core
 
@@ -130,6 +132,17 @@ def write_entire_file(filepath, content):
     fof = open(filepath, 'w')
     fof.write(content)
     fof.close()
+
+def rmtree(path, keepdir=False):
+    names = os.listdir(path)
+    for name in names:
+        subPath = os.path.join(path, name)
+        if os.path.isdir(subPath):
+            rmtree(subPath, keepdir)
+        else:
+            os.remove(subPath)
+    if keepdir != True:
+        os.rmdir(path)
 
 def get_cmake_prog():
     """get cmake path"""
@@ -275,3 +288,100 @@ def sort_versions(versions, asc=True):
 def flat_path_single(path):
     path = path.replace('\\', '/')
     return path
+
+def get_cd_command():
+    """
+    判断平台返回不同跳转命令
+    :return:
+    """
+    if core.PlatformInfo.is_windows_system():
+        result = " pushd "
+    else:
+        result = " cd "
+    return result
+
+def cp_exe_deps(acg, target_path):
+    """
+    windows平台下复制动态依赖到可执行程序目录
+    :param acg:
+    :return:
+    """
+    if core.data.target not in ["windows", "mac"]:
+        return
+    if not os.path.exists(target_path):
+        os.makedirs(target_path)
+
+    copy_lib_to_target(acg.info.binaries, target_path)
+    copy_lib_to_target(acg.info.apps, target_path)
+    copy_custom_lib_res_to_target(acg, target_path)
+
+def copy_lib_to_target(targets, target_path):
+    copyed_set = set()
+    for binary in targets:
+        core.i("copy so of : {} ...".format(binary.name))
+        if not binary.origin_deps:
+            continue
+        for dep in set(binary.origin_deps):
+            dep_module = core.data.deps_mgr.get_module_by_name(dep, False)
+            if not dep_module:
+                continue
+            modules = [dep_module] + dep_module.get_deps()
+            for module in modules:
+                if not module.is_shared:
+                    continue
+                libs = get_libname_on_platform(core.data.target, module.link_name, core.CXX_LIBRARY_LINK_STYLE_SHARED)
+                for lib_name in libs:
+                    try:
+                        sym_full_path = ""
+                        if module.origin_sym_lib_dir:
+                            sym_full_path = os.path.join(module.origin_sym_lib_dir, lib_name)
+                        if not sym_full_path or not os.path.exists(sym_full_path):
+                            sym_full_path = os.path.join(module.origin_lib_dir, lib_name)
+                        if os.path.exists(sym_full_path) and sym_full_path not in copyed_set:
+                            copyed_set.add(sym_full_path)
+                            core.i("copy {} ...".format(sym_full_path))
+                            shutil.copy(sym_full_path, target_path)
+                    except Exception, e:
+                        core.e("copy {} error, skip ... {}".format(lib_name, repr(e)))
+                        continue
+
+
+def copy_custom_lib_res_to_target(acg, target_path):
+    for binary in acg.info.binaries:
+        if binary.name not in acg.resources:
+            continue
+        # 拷贝自定义的resource 到各运行目录下
+        copy_res_to_target(acg, binary)
+    for app in acg.info.apps:
+        if app.name not in acg.resources:
+            continue
+        copy_res_to_target(acg, app)
+
+
+def copy_res_to_target(acg, module):
+    resourceItem = acg.resources[module.name]
+    copy_res_to_target_dir(resourceItem, acg.info.path_info.build_symbol_path,
+                           acg.info.path_info.project_path, acg.info.path_info.project_bin_path);
+    # 拷贝已定义 依赖的dll/dylib 到各运行目录下
+    for dir in module.lib_dirs:
+        if not (dir.find('.tamke') > -1) and not (dir.find('libraries') > -1):
+            for deps_lib in module.deps:
+                # lib_path_name = binary.lib_dirs
+                lib_path = os.path.join(acg.info.path_info.project_folder, dir)
+                # copy_dest_path
+                if acg.info.build_target == 'windows':
+                    deps_lib += ".dll"
+                elif acg.info.build_target == 'mac':
+                    deps_lib += ".dylib"
+                else:
+                    deps_lib += ".so"
+                target_lib_abs_name = os.path.join(lib_path, deps_lib)
+                # print(target_lib_abs_name)
+                if os.path.isfile(target_lib_abs_name):
+                    build_dest = acg.info.path_info.build_symbol_path
+                    project_bin_dest = acg.info.path_info.project_bin_path
+                    print("Copy lib:" + target_lib_abs_name + " To->" + build_dest)
+                    print("Copy lib:" + target_lib_abs_name + " To->" + project_bin_dest)
+                    shutil.copy(target_lib_abs_name, build_dest)
+                    shutil.copy(target_lib_abs_name, project_bin_dest)
+

@@ -799,7 +799,7 @@ class CMakeGenerator(object):
             cpu_cnt = 1
 
         mp_args = " -- -j {} ".format(cpu_cnt)
-        core.log.i("mp_args = " + mp_args)
+        core.i("mp_args = " + mp_args)
         return mp_args
 
     def run_build(self):
@@ -826,7 +826,7 @@ class CMakeGenerator(object):
                 use_nmake = '-G "NMake Makefiles JOM" '
                 jom_exe = os.path.join(core.data.arguments.tmake_path(), "tools", "jom.exe")
                 use_nmake += ' -DCMAKE_MAKE_PROGRAM="' + jom_exe + '"'
-                core.log.i("use_nmake = " + use_nmake)
+                core.i("use_nmake = " + use_nmake)
             elif target == core.PLATFORM_WINDOWS and "wince" in self.arch:
                 use_nmake = '-G "Visual Studio 9 2008 ' + core.WINCE_CPU_MAP[self.arch] + '"'
             else:
@@ -878,7 +878,7 @@ class CMakeGenerator(object):
         execute build command
         """
         command = tmake_utils.get_cd_command() + " \"" + self.path.build_path + "\" && " + command_text
-        core.log.v(command)
+        core.v(command)
         self.__do_rm_build_bin_dir()
         # shell=xx，windows的线上构建报错，不要修改为false
         #ret = core.subprocess.call(command, shell=True)
@@ -916,7 +916,7 @@ class CMakeGenerator(object):
         """
         rm_dirs = [os.path.join(self.path.build_path, "bin"), os.path.join(self.path.build_path, "export")]
         for dir in rm_dirs:
-            core.log.v("do_rm_build_bin_dir: " + dir)
+            core.v("do_rm_build_bin_dir: " + dir)
             if os.path.exists(dir):
                 tmake_utils.rmtree(dir, True)
 
@@ -937,7 +937,7 @@ class CMakeGenerator(object):
                 arguments_info.argv[0],
                 arguments_info.argv[1],
                 arguments_str)
-            core.log.i(command)
+            core.i(command)
             if cond == core.SCRIPT_PRE_BUILD:
                 cmake_text += core.CMAKE_MODULE_PRE_BUILD_TEMPLATE.format(fake_target,
                                                                            command,

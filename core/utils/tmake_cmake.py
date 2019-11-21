@@ -54,8 +54,6 @@ def load_cmake_plugin_and_generate(target, arch, write_to_file=True):
     """
     import_cmd = "import core.cmake_gens.tmake_cmake_generator_" + target
     call_cmd = "core.cmake_gens.tmake_cmake_generator_" + target + ".cmake_plugin_init(arch)"
-    print ">>>:" + import_cmd
-    import core.cmake_gens.tmake_cmake_generator_windows
     try:
         exec import_cmd
     except ImportError:
@@ -65,9 +63,15 @@ def load_cmake_plugin_and_generate(target, arch, write_to_file=True):
     acg.generate()
     core.data.action_mgr.run_after_action(TMAKE_ACTION_CMAKE_LISTS, core.data, acg)
     if write_to_file:
-        core.write_entire_file(os.path.join(acg.path.build_path, CMAKE_SCRIPT_FILE_NAME), acg.cmake_text)
+        core.write_entire_file(os.path.join(acg.path.build_path, core.CMAKE_SCRIPT_FILE_NAME), acg.cmake_text)
     core.data.action_mgr.run_befor_action(TMAKE_ACTION_PUBLISH_PROJECT, core.data, acg)
     return acg
+
+def run_cmake_build(acg):
+    """call cmake project"""
+    core.data.action_mgr.run_befor_action(TMAKE_ACTION_CMAKE_BUILD, core.data, acg)
+    acg.run_build()
+    core.data.action_mgr.run_after_action(TMAKE_ACTION_CMAKE_BUILD, core.data, acg)
 
 def run_cmake_project(acg, cmake_list_path, name):
     """call cmake project"""
