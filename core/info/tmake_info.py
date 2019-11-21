@@ -11,12 +11,16 @@ from .tmake_platform import PlatformInfo
 from .tmake_environment import EnvironmentInfo
 from .tmake_project import ProjectInfo
 
+from core.deps.tmake_deps_manager import DepsManager
+
+
 class Data(object):
 
     def __init__(self):
         self.action_mgr = None
         self.arguments = ArgumentsInfo(sys.argv)
         self.platform = PlatformInfo()
+        self.deps_mgr = DepsManager()
         self.project = None
         self.param = {}
         self.current_project = None
@@ -93,7 +97,7 @@ class Data(object):
         """
         for proj in project.local_deps_projects:
             self.__parse_project_deps(proj, False)
-        # core.data.deps_mgr.parse(project, is_root)
+        core.data.deps_mgr.parse(project, is_root)
 
     def change_project_arch(self, arch):
         from core.info import tmake_builtin
@@ -101,8 +105,8 @@ class Data(object):
         self.arch = arch
         if "projsmap" in self.param:
             del self.param["projsmap"]
-        # self.deps_mgr.clear()
-        # self.deps_mgr.update_arch(arch)
+        self.deps_mgr.clear()
+        self.deps_mgr.update_arch(arch)
 
     def parse_project(self):
         """parse tmake.proj"""
@@ -113,7 +117,7 @@ class Data(object):
             core.data.project = core.utils.tmake_project_parser.parse(script)
             self.__parse_project_deps(core.data.project, True)
             # 依赖关系处理完毕逻辑
-            # core.data.deps_mgr.parse_finish()
+            core.data.deps_mgr.parse_finish()
             return True
         # 处理只有CMakeLists.txt的场景
         script = os.path.join(core.data.arguments.work_path(), "CMakeLists.txt")

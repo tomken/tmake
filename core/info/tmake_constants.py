@@ -1,6 +1,9 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+import os
+
+
 TMAKE_VERSION = '1.0.0'
 
 # cmake
@@ -8,14 +11,28 @@ MIN_CMAKE_VERSION = '3.1'
 DEFAULT_CMAKE_VERSION = '3.13.1'
 
 LINESEP = "\n"
+TMAKE_DEFAULT_PATH = os.path.join(os.path.expanduser('~'),
+                                  ".tmake")
+TMAKE_LIBRARIES_PATH = os.path.join(TMAKE_DEFAULT_PATH,
+                                    "libraries")
+TMAKE_LOCK_PATH = os.path.join(TMAKE_DEFAULT_PATH,
+                               "lock")
 
 # build config
 CONFIG_RELEASE = 'release'
 CONFIG_DEBUG = 'debug'
 
+# C++ library type
+CXX_LIBRARY_LINK_STYLE_STATIC = 'STATIC'
+CXX_LIBRARY_LINK_STYLE_SHARED = 'SHARED'
+CXX_LIBRARY_LINK_STYLE_FRAMEWORK = 'FRAMEWORK'
+CXX_LIBRARY_LINK_STYLE_MACOSX_BUNDLE = 'MACOSX_BUNDLE'
+
 ALLOW_LINK_STYLE_LIST = ["static", "dynamic", "framework"]
 
 SHARED_SUFFIX = "_shared"
+BINARY_SUFFIX = "_binary"
+FRAMEWORK_SUFFIX = "_framework"
 
 BUILD_INSTALL_PREFIX = 'export'
 BUILD_OUTPUT_NAME = 'bin'

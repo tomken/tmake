@@ -1,7 +1,7 @@
 
 from .info.tmake_constants import *
 from .info.tmake_platform import PlatformInfo
-from .info.tmake_data import GlobalData as data
+from .info.tmake_info import GlobalData as data
 from .info.tmake_cmake_info import CMakeProjectInfo
 
 from .cmd.tmake_base import Command

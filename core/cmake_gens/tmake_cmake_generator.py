@@ -141,7 +141,7 @@ class CMakeGenerator(object):
         self.info = core.CMakeProjectInfo()
         self.info.parse(core.data.current_project, self.path)
         self.cmake_text = ""
-        self.cmake_home = comm_utils.get_cmake_prog()
+        self.cmake_home = tmake_utils.get_cmake_prog()
 
         self.resources = {}
 
@@ -223,9 +223,9 @@ class CMakeGenerator(object):
         self.info.global_cxx_flags += core.data.current_project.get_feature_headers_flags()
 
         self.cmake_text += CMAKE_GLOBAL_TEMPLATE.format(
-            comm_utils.flat_path_list(self.info.global_include_dirs),
-            comm_utils.flat_path_list(self.info.global_lib_dirs),
-            comm_utils.flat_cxx_defines(self.info.global_defines, True),
+            tmake_utils.flat_path_list(self.info.global_include_dirs),
+            tmake_utils.flat_path_list(self.info.global_lib_dirs),
+            tmake_utils.flat_cxx_defines(self.info.global_defines, True),
             self.info.global_c_flags,
             self.info.global_cxx_flags,
             common_text
@@ -265,18 +265,18 @@ class CMakeGenerator(object):
                     os.mkdir(link_folder)
                 link_path = os.path.join(link_folder, bundle_name)
                 if os.path.exists(link_path) and not clean_bundle:
-                    comm_utils.reset_dir_path(link_path)
+                    tmake_utils.reset_dir_path(link_path)
                 clean_bundle = True
-                comm_utils.copyFiles(tmake_path(bundle), link_path)
-                #comm_utils.set_symlink(tmake_path(bundle), link_path)
+                tmake_utils.copyFiles(tmake_path(bundle), link_path)
+                #tmake_utils.set_symlink(tmake_path(bundle), link_path)
                 source_list.append(link_path)
         if source_list:
-            res = comm_utils.flat_path_list(comm_utils.fix_path_to_abs(set(source_list)))
+            res = tmake_utils.flat_path_list(tmake_utils.fix_path_to_abs(set(source_list)))
         else:
             res = ""
         item = CMakeSourceItem()
         item.flat_path = res
-        item.paths = comm_utils.fix_path_to_abs(set(source_list))
+        item.paths = tmake_utils.fix_path_to_abs(set(source_list))
         self.resources[resource.name] = item
 
     def __generate_module(self, module):
@@ -335,8 +335,8 @@ class CMakeGenerator(object):
 
     def __generate_module_qt(self, module):
         qt_components = " ".join(module.qt_components)
-        qt_ui = comm_utils.flat_path_list(module.qt_ui)
-        qt_moc_headers = comm_utils.flat_path_list(module.qt_moc_headers)
+        qt_ui = tmake_utils.flat_path_list(module.qt_ui)
+        qt_moc_headers = tmake_utils.flat_path_list(module.qt_moc_headers)
         ret_str = core.CMAKE_QT_MODULE_TEMPLATE.format(qt_components, module.name, qt_moc_headers, qt_ui)
         return ret_str
 
@@ -423,7 +423,7 @@ class CMakeGenerator(object):
             else:
                 link_libs.append(item)
         if link_libs:
-            dep_info += comm_utils.order_flat_list(link_libs)
+            dep_info += tmake_utils.order_flat_list(link_libs)
         if framework_info:
             dep_info += framework_info
         if dep_info:
@@ -454,7 +454,7 @@ class CMakeGenerator(object):
         return "TARGET_INCLUDE_DIRECTORIES({} {} {}){}" \
             .format(module.name,
                     "PRIVATE",
-                    comm_utils.flat_path_list(comm_utils.fix_path_to_abs(module.include_dirs)),
+                    tmake_utils.flat_path_list(tmake_utils.fix_path_to_abs(module.include_dirs)),
                     core.LINESEP)
 
     def __generate_module_properties(self, module):
@@ -520,8 +520,8 @@ class CMakeGenerator(object):
                     app_type,
                     library_style,
                     module.exclude_from_all,
-                    comm_utils.flat_path_list(
-                        comm_utils.fix_path_to_abs(set(module.srcs + module.headers + dep_headers))),
+                    tmake_utils.flat_path_list(
+                        tmake_utils.fix_path_to_abs(set(module.srcs + module.headers + dep_headers))),
                     res, qt_ui,
                     core.LINESEP)
         return add_cmd + set_target_properties
@@ -615,24 +615,24 @@ class CMakeGenerator(object):
                                                                      module.name, module.name)
         if self.info.is_project_cmd:
             dep_headers = self.__module_deps_headers(module)
-            dep_dict = comm_utils.build_source_group_by_list(dep_headers,
+            dep_dict = tmake_utils.build_source_group_by_list(dep_headers,
                                                              "Deps",
                                                              core.TMAKE_LIBRARIES_PATH)
             key_list = list(dep_dict.keys())
-            comm_utils.sort_versions(key_list)
+            tmake_utils.sort_versions(key_list)
             for key in key_list:
                 cmake_text += "source_group(\"{}\" FILES {})\n".format(key, dep_dict[key])
 
             # 针对是否头文件和源文件分开做的处理
             is_together = core.data.arguments.has_opt("--together")
-            header_dict = comm_utils.build_source_group_by_list(module.headers,
+            header_dict = tmake_utils.build_source_group_by_list(module.headers,
                                                                 "" if is_together else "Header Files",
                                                                 self.path.project_folder)
-            source_dict = comm_utils.build_source_group_by_list(module.srcs,
+            source_dict = tmake_utils.build_source_group_by_list(module.srcs,
                                                                 "" if is_together else "Source Files",
                                                                 self.path.project_folder)
             key_list = list(header_dict.keys() + source_dict.keys())
-            comm_utils.sort_versions(key_list)
+            tmake_utils.sort_versions(key_list)
             for key in key_list:
                 if key in header_dict:
                     cmake_text += "source_group(\"{}\" FILES {})\n".format(key, header_dict[key])
@@ -680,7 +680,7 @@ class CMakeGenerator(object):
         command_text += use_nmake + self.__build_params()
 
         core.v(command_text)
-        # comm_utils.do_rm_build_bin_dir(comm_utils.get_build_path(self.arch))
+        # tmake_utils.do_rm_build_bin_dir(tmake_utils.get_build_path(self.arch))
         # windows用false，其余的用true
 
         if core.data.use_cmakelist:
@@ -698,7 +698,7 @@ class CMakeGenerator(object):
             #                                                 " -DEXECUTABLE_OUTPUT_PATH={}".format(exectable_output_path) + \
             #                                                 " -DLIBRARY_OUTPUT_PATH={}".format(library_output_path)
             #
-            # pre_command_text = comm_utils.get_cd_command() + " \"" + self.path.project_path + "\" && " + pre_command_text
+            # pre_command_text = tmake_utils.get_cd_command() + " \"" + self.path.project_path + "\" && " + pre_command_text
             #
             # ret = core.subprocess.call(pre_command_text, shell=not PlatformInfo.is_windows_system())
             # if ret != 0:
@@ -820,9 +820,9 @@ class CMakeGenerator(object):
             command_text += '"' + vs_tools + '" '
             command_text += "&&"
             if core.data.use_cmakelist:
-                command_text += comm_utils.get_cd_command() + " \"" + self.path.project_folder + "\" && "
+                command_text += tmake_utils.get_cd_command() + " \"" + self.path.project_folder + "\" && "
             else:
-                command_text += comm_utils.get_cd_command() + " \"" + self.path.build_path + "\" && "
+                command_text += tmake_utils.get_cd_command() + " \"" + self.path.build_path + "\" && "
             if not core.data.arguments.has_flag("nmp",
                                                  "nmp") and target == core.PLATFORM_WINDOWS and not "wince" in self.arch\
                                                 and not core.data.use_cmakelist:
@@ -869,7 +869,7 @@ class CMakeGenerator(object):
                                                            use_nmake + self.__build_params()
 
 
-            pre_command_text = comm_utils.get_cd_command() + " \"" + self.path.build_path + "\" && " + pre_command_text
+            pre_command_text = tmake_utils.get_cd_command() + " \"" + self.path.build_path + "\" && " + pre_command_text
             ret = core.subprocess.call(pre_command_text, shell=True)
             if ret != 0:
                 raise core.TmakeException('Set CMAKE_INSTALL_PREFIX failed! return code is {}'.format(ret))
@@ -880,7 +880,7 @@ class CMakeGenerator(object):
         """
         execute build command
         """
-        command = comm_utils.get_cd_command() + " \"" + self.path.build_path + "\" && " + command_text
+        command = tmake_utils.get_cd_command() + " \"" + self.path.build_path + "\" && " + command_text
         core.log.v(command)
         self.__do_rm_build_bin_dir()
         # shell=xx，windows的线上构建报错，不要修改为false
@@ -921,7 +921,7 @@ class CMakeGenerator(object):
         for dir in rm_dirs:
             core.log.v("do_rm_build_bin_dir: " + dir)
             if os.path.exists(dir):
-                comm_utils.rmtree(dir, True)
+                tmake_utils.rmtree(dir, True)
 
     def __generate_module_script_tasks(self, module):
         """
