@@ -6,8 +6,8 @@ cmake windows generator file
 import os
 
 import core
-from core.utils import comm_utils
-from core.info.tmake_auto_cmake_commands import get_cmake_command
+from core.utils import tmake_utils
+# from core.info.tmake_auto_cmake_commands import get_cmake_command
 from .tmake_cmake_generator import CMakeGenerator, CMakeSourceItem
 
 PLUGIN_VERSION = "1.0.0"
@@ -41,7 +41,7 @@ class CMakeGeneratorWindows(CMakeGenerator):
         for app in self.info.apps:
             app.link_style = 'WIN32'
 
-        cmd = get_cmake_command(self.arch)
+        cmd = ""
         if cmd:
             self.info.cmake_command_default += " " + cmd
         CMakeGenerator.generate(self)

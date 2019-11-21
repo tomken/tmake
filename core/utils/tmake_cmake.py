@@ -55,11 +55,11 @@ def load_cmake_plugin_and_generate(target, arch, write_to_file=True):
     import_cmd = "import core.cmake_gens.tmake_cmake_generator_" + target
     call_cmd = "core.cmake_gens.tmake_cmake_generator_" + target + ".cmake_plugin_init(arch)"
     print ">>>:" + import_cmd
-    # try:
-    import core.cmake_gens.tmake_cmake_generator_mac
-        # exec import_cmd
-    # except ImportError:
-    #    raise core.TmakeException("The target:" + target + " is not support! Please check your -t params!")
+    import core.cmake_gens.tmake_cmake_generator_windows
+    try:
+        exec import_cmd
+    except ImportError:
+        raise core.TmakeException("The target:" + target + " is not support! Please check your -t params!")
     acg = eval(call_cmd)
     core.data.action_mgr.run_befor_action(TMAKE_ACTION_CMAKE_LISTS, core.data, acg)
     acg.generate()

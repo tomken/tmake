@@ -5,6 +5,8 @@ class environment file
 """
 import os
 
+import core
+
 from .tmake_exception import TmakeException
 from .tmake_platform import PlatformInfo
 from .tmake_log import *
@@ -115,7 +117,7 @@ class EnvironmentInfo(object):
                     install_folder = common_path[:common_path.find("Common7")]
                 else:
                     install_folder = common_path
-                log.v("found vs tool in the environment :{}={} ".format(env_key, common_path))
+                core.v("found vs tool in the environment :{}={} ".format(env_key, common_path))
                 self.__wrap_vs_info(install_folder, version)
         self.__filter_custom_vs()
         if self.custom_vs and not self.__vs_tool_info.install_root:
@@ -125,8 +127,8 @@ class EnvironmentInfo(object):
 
     def __show_vs_version_info(self):
         for item in self.__all_vs_tools:
-            log.v("all vs tools info:\n" + str(item))
-        log.v("using vs tool info:\n" + str(self.__vs_tool_info))
+            core.v("all vs tools info:\n" + str(item))
+        core.v("using vs tool info:\n" + str(self.__vs_tool_info))
 
     def __wrap_vs_info(self, install_folder, version):
         """
@@ -155,7 +157,7 @@ class EnvironmentInfo(object):
             for dir_name in dir_list:
                 var_path = os.path.join(real_path, dir_name, "VC/Auxiliary/Build/vcvars32.bat")
                 if os.path.isfile(var_path):
-                    log.v("found vs tool in the specified path:{} ".format(var_path))
+                    core.v("found vs tool in the specified path:{} ".format(var_path))
                     self.__wrap_vs_info(os.path.join(real_path, dir_name), "vs2017")
                     break
 

@@ -88,12 +88,12 @@ class CommandHelp(core.Command):
         logstr += "\n      -t, --target       : Optional Settings [%s] , the default value is curr platform" % self.__getpara(
             self.__get_allplatform())
         logstr += "\n      -d, --directory    : Optional Settings project directory , the default value is curr directory"
-        logstr += "\n      -a, --architecture : Optional Settings [(android)%s, (ios)%s, (pc)%s, (qnx)%s, all] " \
+        logstr += "\n      -a, --architecture : Optional Settings [(android)%s, (ios)%s, (pc)%s, all] " \
                   "\n                           multiple separated by \'%s\'  , the \'all\' is contains all the cpu architecture of Current platform " \
                   "\n                           the default value is curr platform architecture" % (
                       self.__getpara(self.__get_android_arc()),
                       self.__getpara(self.__get_ios_arc()), self.__getpara(self.__get_mac_arc()),
-                      self.__getpara(self.__get_qnx_arc()), self.__separated)
+                      self.__separated)
         logstr += "\n      -l, --alias        : Set alias for target \"embedded\", this option does not work for other targets"
         logstr += "\n      -v, --verbose      : Optional Settings show detail log , the default value is not"
         logstr += "\n      -V, --Verbose      : Optional Settings show more detail log (contain build log), the default value is not"
