@@ -316,8 +316,6 @@ class ProjectInfo(object):
         header_path = header_path.replace("\\", "/")
         if not os.path.exists(header_path):
             return flags
-        if "qnx" in self.target:
-            flags = " -Wp,-include{} ".format(header_path)
         elif "windows" not in self.target:
             flags = " -include {} ".format(header_path)
         else:

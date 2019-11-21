@@ -49,10 +49,6 @@ class CommandHelp(core.Command):
                 core.TARGET_CPU_SIMULATOR,
                 core.TARGET_CPU_FUSION]
 
-    def __get_qnx_arc(self):
-        return [core.TARGET_CPU_X86,
-                core.TARGET_CPU_ARMV7]
-
     def __get_mac_arc(self):
         return [core.TARGET_CPU_X86,
                 core.TARGET_CPU_X64]

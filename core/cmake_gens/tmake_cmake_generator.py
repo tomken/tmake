@@ -9,19 +9,122 @@ cmake generator file
 import os
 
 import core
-from core import CMAKE_CACHE_TEMPLATE
-from core import CMAKE_GLOBAL_TEMPLATE
-from core import CMAKE_HEADER_TEMPLATE
+
 from core import PlatformInfo
-from core.tmake_cmakelists import recover_cmakelists, copy_bin_to_export, move_header_files, arrange_dir, \
-    delete_empty_dir, copy_libs_to_export, change_cmakelists_output
 from core.info.tmake_builtin import tmake_path, tmake_glob
 from core.info.tmake_path_info import PathInfo
 from core.utils import tmake_utils
+
 from multiprocessing import cpu_count
 
-from core.utils import process_utils
+from core.utils import tmake_process_utils as process_utils
 
+from .tmake_cmakelists import recover_cmakelists, copy_bin_to_export, move_header_files, arrange_dir, \
+    delete_empty_dir, copy_libs_to_export, change_cmakelists_output
+
+
+CMAKE_SCRIPT_FILE_NAME = 'CMakeLists.txt'
+CMAKE_CACHE_FILE_NAME = 'CMakeCache.txt'
+
+# format info:: 0:name, 1:cmake_min_version, 2:bin, 3:export, 4:target, 5:build_config
+CMAKE_HEADER_TEMPLATE = """
+PROJECT({0})
+
+include(CheckIncludeFileCXX)
+
+CMAKE_MINIMUM_REQUIRED(VERSION {1})
+
+{6}
+
+SET(EXECUTABLE_OUTPUT_PATH ${{PROJECT_BINARY_DIR}}/{2})
+SET(LIBRARY_OUTPUT_PATH ${{PROJECT_BINARY_DIR}}/{2})
+SET(CMAKE_INSTALL_PREFIX ${{PROJECT_BINARY_DIR}}/{3})
+
+enable_language(ASM)
+set(can_use_assembler TRUE)
+
+SET(BUILD_TARGET {4})
+SET(BUILD_CONFIG {5})
+"""
+
+CMAKE_CACHE_TEMPLATE = """
+set(CCACHE_PROGRAM "{0}")
+if(CCACHE_PROGRAM)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${{CCACHE_PROGRAM}}")
+endif()
+
+if(CCACHE_PROGRAM)
+    get_property(RULE_LAUNCH_COMPILE GLOBAL PROPERTY RULE_LAUNCH_COMPILE)
+    if(RULE_LAUNCH_COMPILE AND CMAKE_GENERATOR STREQUAL "Xcode")
+        # Set up wrapper scripts
+        configure_file({1}/tools/launch-c.in launch-c)
+        configure_file({2}/tools/launch-cxx.in launch-cxx)
+        execute_process(COMMAND chmod a+rx
+                                 "${{CMAKE_BINARY_DIR}}/launch-c"
+                                 "${{CMAKE_BINARY_DIR}}/launch-cxx"
+        )
+
+        # Set Xcode project attributes to route compilation and linking
+        # through our scripts
+        set(CMAKE_XCODE_ATTRIBUTE_CC         "${{CMAKE_BINARY_DIR}}/launch-c")
+        set(CMAKE_XCODE_ATTRIBUTE_CXX        "${{CMAKE_BINARY_DIR}}/launch-cxx")
+        set(CMAKE_XCODE_ATTRIBUTE_LD         "${{CMAKE_BINARY_DIR}}/launch-c")
+        set(CMAKE_XCODE_ATTRIBUTE_LDPLUSPLUS "${{CMAKE_BINARY_DIR}}/launch-cxx")
+    endif()
+endif()
+"""
+
+# format info:: 0:global_include, 1:global_link_dir, 2:global_definitions, 3:global_c_flags, 4:global_cxx_flags, 5:global_custom
+CMAKE_GLOBAL_TEMPLATE = """
+ADD_DEFINITIONS(-DABTOR=1  -D_ABTOR_BUILD_TARGET_EXISTS -D_ABTOR_BUILD_TARGET_${{BUILD_TARGET}} -DABTOR_${{BUILD_TARGET}} -DABTOR_${{BUILD_CONFIG}} -D${{BUILD_CONFIG}}=1)
+INCLUDE_DIRECTORIES({0})
+LINK_DIRECTORIES({1})
+ADD_DEFINITIONS({2})
+
+SET(CMAKE_C_FLAGS " ${{CMAKE_C_FLAGS}} {3}")
+SET(CMAKE_CXX_FLAGS " ${{CMAKE_CXX_FLAGS}} {4}")
+{5}
+IF (BUILD_TARGET MATCHES "IOS")
+    SET(CMAKE_MACOSX_BUNDLE YES)
+    SET(CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO")
+ENDIF()
+
+"""
+
+CMAKE_MODULE_PRE_BUILD_TEMPLATE = """
+ADD_CUSTOM_TARGET({0}
+   COMMAND {1}
+)
+ADD_DEPENDENCIES({2} {0})
+"""
+
+CMAKE_MODULE_PRE_LINK_OR_POST_BUILD_TEMPLATE = """
+ADD_CUSTOM_COMMAND(TARGET {0}
+ {1}
+ COMMAND {2}
+)
+"""
+SCRIPT_PRE_BUILD = "pre_build"
+SCRIPT_PRE_LINK = "pre_link"
+SCRIPT_POST_BUILD = "post_build"
+SCRIPT_TYPE_LIST = [SCRIPT_PRE_BUILD, SCRIPT_PRE_LINK, SCRIPT_POST_BUILD]
+
+CMAKE_QT_MODULE_TEMPLATE = """set(CMAKE_INCLUDE_CURRENT_DIR ON)
+find_package(Qt5 REQUIRED COMPONENTS {0})
+
+set(CMAKE_AUTOMOC ON)
+"""
+
+CMAKE_MODULE_ADD_RES_TEMPLATE = """
+set(RESOURCE_FILES_{}
+  {}
+)
+
+set_target_properties({} PROPERTIES
+  MACOSX_BUNDLE TRUE
+  RESOURCE "${{RESOURCE_FILES_{}}}"
+)
+"""
 
 class CMakeSourceItem(object):
     def __init__(self):
@@ -464,7 +567,7 @@ class CMakeGenerator(object):
         info = ""
         if module.lib_dirs:
             info += "LINK_DIRECTORIES({}){}" \
-                .format(comm_utils.flat_path_list(comm_utils.fix_path_to_abs(module.lib_dirs)),
+                .format(tmake_utils.flat_path_list(tmake_utils.fix_path_to_abs(module.lib_dirs)),
                         core.LINESEP)
         return info
 

@@ -81,3 +81,24 @@ def read_all_from_file(full_path):
     fd.close()
     return result
 
+def fix_path_to_abs(srcs):
+    new_srcs = []
+    for src in srcs:
+        if src == None:
+            continue
+        new_srcs.append(core.info.tmake_builtin.tmake_path(src))
+    return new_srcs
+
+def clean(path):
+    """clean build folder"""
+    try:
+        if os.path.exists(path):
+            if os.path.isfile(path):
+                os.remove(path)
+            else:
+                shutil.rmtree(path)
+    except Exception as exp:
+        core.e(exp)
+        core.e('Possible Cause: {} is locked \
+        or do not have permission when clean, please check'.format(path))
+    core.s("clear {} finished".format(path))

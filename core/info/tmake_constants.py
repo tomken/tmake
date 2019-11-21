@@ -3,6 +3,12 @@
 
 TMAKE_VERSION = '1.0.0'
 
+# cmake
+MIN_CMAKE_VERSION = '3.1'
+DEFAULT_CMAKE_VERSION = '3.13.1'
+
+LINESEP = "\n"
+
 # build config
 CONFIG_RELEASE = 'release'
 CONFIG_DEBUG = 'debug'
