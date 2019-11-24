@@ -5,7 +5,6 @@ import os
 import re
 import sys
 import shutil
-import json
 
 import core
 
@@ -163,15 +162,6 @@ def reset_deps(deps):
     if deps and isinstance(deps, list):
         for dep in deps:
             dep_name, dep_version, custom_link_name = parse_dep(dep)
-            if "windows" in core.data.target and dep_version != "local":
-                if core.SHARED_SUFFIX not in dep_name:
-                    ret = is_library_exist(dep_name, dep_version, core.data.target, abcoretor.data.arch, "tmake.xml")
-                    if not ret:
-                        new_name = dep_name + core.SHARED_SUFFIX
-                        ret = is_library_exist(new_name, dep_version, core.data.target, abcoretor.data.arch,
-                                               "tmake.xml")
-                        if ret:
-                            dep_name = new_name
             if custom_link_name:
                 new_deps.append("{}:{}/{}".format(dep_name, dep_version, custom_link_name))
             else:
@@ -325,6 +315,7 @@ def __check_ios(mod_name, link_style):
     else:
         return [mod_name]
     return ['%s%s' % (name, suffix)]
+
 
 def get_cmake_prog():
     """get cmake path"""
@@ -548,10 +539,62 @@ def copy_custom_lib_res_to_target(acg, target_path):
         copy_res_to_target(acg, app)
 
 
+def reset_dir_path(dirPath):
+    if os.path.exists(dirPath):
+        shutil.rmtree(dirPath)
+
+
+def copy_res_to_target_dir(resourceItem, build_bin_dir, project_home, project_bin_dir):
+    dir_name_list = []
+    if resourceItem != None:
+        for item in resourceItem.paths:
+            if os.path.isfile(item):
+                print("\n===>Prepare Copy file:" + item)
+                print("\n===>Copy Will Overwrite")
+                print("Check ->" + build_bin_dir)
+                print("Check ->" + project_home)
+                print("Check ->" + project_bin_dir)
+                print("\n")
+                if not os.path.exists(build_bin_dir):
+                    os.mkdir(build_bin_dir)
+                if not os.path.exists(project_home):
+                    os.mkdir(project_home)
+                if not os.path.exists(project_bin_dir):
+                    os.mkdir(project_bin_dir)
+                shutil.copy(item, build_bin_dir)
+                shutil.copy(item, project_home)
+                shutil.copy(item, project_bin_dir)
+            else:
+                index = item.rfind('/')
+                dir_name = item[index + 1: len(item)]
+                build_dest = os.path.join(build_bin_dir, dir_name)  # build bin path
+                project_dest = os.path.join(project_home, dir_name)  # project path
+                project_bin_dest = os.path.join(project_bin_dir, dir_name)  # project bin path
+                build_dest = build_dest.replace('\\', '/')
+                project_dest = project_dest.replace('\\', '/')
+                project_bin_dest = project_bin_dest.replace('\\', '/')
+                print("\n===>Prepare Copy file:" + item)
+                print("\n===>Copy Will Overwrite")
+                print("Check dir: ->" + build_dest)
+                print("Check dir: ->" + project_dest)
+                print("Check dir: ->" + project_bin_dest)
+                if dir_name not in dir_name_list:
+                    reset_dir_path(build_dest)
+                    reset_dir_path(project_dest)
+                    reset_dir_path(project_bin_dest)
+                dir_name_list.append(dir_name)
+                print("Copy To->" + build_dest)
+                copyFiles(item, build_dest)
+                print("Copy To->" + project_dest)
+                copyFiles(item, project_dest)
+                print("Copy To->" + project_bin_dest)
+                copyFiles(item, project_bin_dest)
+
+
 def copy_res_to_target(acg, module):
     resourceItem = acg.resources[module.name]
     copy_res_to_target_dir(resourceItem, acg.info.path_info.build_symbol_path,
-                           acg.info.path_info.project_path, acg.info.path_info.project_bin_path);
+                           acg.info.path_info.project_path, acg.info.path_info.project_bin_path)
     # 拷贝已定义 依赖的dll/dylib 到各运行目录下
     for dir in module.lib_dirs:
         if not (dir.find('.tamke') > -1) and not (dir.find('libraries') > -1):
@@ -574,3 +617,29 @@ def copy_res_to_target(acg, module):
                     print("Copy lib:" + target_lib_abs_name + " To->" + project_bin_dest)
                     shutil.copy(target_lib_abs_name, build_dest)
                     shutil.copy(target_lib_abs_name, project_bin_dest)
+
+
+def copyFiles(src_dir, target_dir):
+    for f in os.listdir(src_dir):
+        sourceF = os.path.join(src_dir, f)
+        targetF = os.path.join(target_dir, f)
+        if os.path.isfile(sourceF):
+            # 创建目录
+            if not os.path.exists(target_dir):
+                os.makedirs(target_dir)
+            # 文件不存在，或者存在但是大小不同，覆盖
+            if not os.path.exists(targetF) or \
+                    (os.path.exists(targetF) and (os.path.getsize(targetF) != os.path.getsize(sourceF))) or \
+                    (os.path.exists(targetF) and (os.path.getmtime(targetF) != os.path.getmtime(sourceF))):
+                # 2进制文件
+                # open(targetF, "wb").write(open(sourceF, "rb").read())
+                fd_s = open(sourceF, "rb")
+                bin_tmp = fd_s.read()
+                fd_s.close()
+                fd_d = open(targetF, "wb")
+                fd_d.write(bin_tmp)
+                fd_d.close()
+            else:
+                pass
+        if os.path.isdir(sourceF):
+            copyFiles(sourceF, targetF)
