@@ -84,7 +84,7 @@ class CommandRun(core.Command):
                 cmd_check[0] += '.exe'
             core.v('post  cmd_check : {}'.format(cmd_check))
             if not os.path.exists(cmd_check[0]):
-                raise abtcoreor.TmakeException('%s is not exist %s , please first build !' % (cmd_check[0],
+                raise core.TmakeException('%s is not exist %s , please first build !' % (cmd_check[0],
                                                                                           self.__common_log_info()))
             if len(cwd) <= 0:
                 cwd = None

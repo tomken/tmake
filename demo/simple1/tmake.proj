@@ -20,19 +20,20 @@ tmake_cxx_library(
   srcs = src_list,
   headers = header_list,
   include_dirs = include_dir,
+  exported_headers = [tmake_path('include')]
 )
 
 # 指定编译二进制
 tmake_cxx_binary(
   name = 'demo1_tester',
   srcs = [tmake_path('src/main.cpp')],
-  # deps = ['demo1']
+  deps = ['demo1']
 )
 
 # 运行可执行程序demo1
 tmake_host_tester_task(
-    name            =     'demo1_test',
-    command         =     'demo1'
+    name            =     'demo1_task',
+    command         =     'demo1_tester'
 )
 
 
