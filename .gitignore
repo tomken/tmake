@@ -8,3 +8,4 @@ __pycache__/
 demo/simple1/build
 demo/simple1/project
 demo/simple1/local_export
+.idea

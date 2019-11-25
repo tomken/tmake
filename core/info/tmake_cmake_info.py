@@ -324,7 +324,7 @@ class CMakeProjectInfo(object):
                         core.e("Cannot copy the root directory, please check exported_headers!")
                         continue
                     if os.path.isdir(path):
-                        tmake_utils.copytree(path, des_dir, ignoreHide=True)
+                        tmake_utils.copytree(path, des_dir, ignore_hide=True)
                         sub_folder = os.listdir(path)
                         for item in sub_folder:
                             full_path = os.path.join(des_dir, item)

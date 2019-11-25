@@ -1,19 +1,20 @@
-    #!/usr/bin/python
+# !/usr/bin/python
 # -*- coding: UTF-8 -*-
 """
 print tmake verson
 """
 
 import json
-
+import shutil
 import core
-
 from core.utils.tmake_cmake import *
+
 
 class CommandBuild(core.Command):
     """
     help command
     """
+
     def help(self):
         """tmake build help"""
         return "<usage>: tmake build [[no-test|nt] | [all-proj-test|apt]] " + \
@@ -113,10 +114,11 @@ class CommandBuild(core.Command):
                 library_names.append(library.name)
             acg.info.libraries += library_list
         for library in acg.info.libraries:
-            #headers
-            if library.name not in library_names and (core.data.use_cmakelist or (core.data.use_proj_cmakelist and acg.info.external_builds)):
+            # headers
+            if library.name not in library_names and (
+                    core.data.use_cmakelist or (core.data.use_proj_cmakelist and acg.info.external_builds)):
                 src_dir = os.path.join(acg.path.build_path, core.BUILD_INSTALL_PREFIX)
-                #dst_dir = acg.path.get_local_export_include_path(library.name)
+                # dst_dir = acg.path.get_local_export_include_path(library.name)
                 dst_dir = os.path.join(acg.path.local_export_path, library.name)
                 src_dir = src_dir.replace("\\", "/")
                 dst_dir = dst_dir.replace("\\", "/")
@@ -137,7 +139,7 @@ class CommandBuild(core.Command):
                     # mac平台编译的export动态库，调用strip时会失败。这里会再次调用一次
                     if (core.data.target == core.PLATFORM_IOS
                         or core.data.target == core.PLATFORM_MAC) \
-                            and library.link_style == abtcoreor.CXX_LIBRARY_LINK_STYLE_SHARED:
+                            and library.link_style == core.CXX_LIBRARY_LINK_STYLE_SHARED:
                         tmake_utils.stripSymbols(lib_path)
                     tmake_utils.copy(lib_path, os.path.join(des_dir, lib))
                 else:

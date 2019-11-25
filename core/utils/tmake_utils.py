@@ -2,13 +2,14 @@
 # -*- coding: UTF-8 -*-
 
 import os
+import re
 import sys
 import shutil
-import json
 
 import core
 
 from .tmake_arch_helper import ArchHelper
+
 
 def fix_path_style(path):
     """
@@ -21,6 +22,7 @@ def fix_path_style(path):
     temp_path = path.replace("\\\\", "/")
     return temp_path.replace("\\", "/")
 
+
 def exec_tmake_command(arguments):
     """execCommand"""
     command = arguments.tmake_cmd()
@@ -30,7 +32,7 @@ def exec_tmake_command(arguments):
         exec import_cmd
     except ImportError:
         raise core.TmakeException("The command:" + command + " is not support! Please check your command!")
-    
+
     # 这里不抓取异常，不然外面获取不到
     cmd_executor = eval(call_cmd)
     cmd_executor.set_argument(arguments)
@@ -38,6 +40,7 @@ def exec_tmake_command(arguments):
         core.i("help info:\n" + cmd_executor.help())
     else:
         cmd_executor.run()
+
 
 def get_archs():
     """get cpu archs"""
@@ -80,11 +83,33 @@ def get_archs():
             archs = core.TARGET_IOS_CPU_ALL
     return archs
 
+
+def order_flat_list(l):
+    """
+    ['1','2','3','2','4','3']--->['1','2','4','3']
+    :param l:
+    :return:
+    """
+    if type(l) != list:
+        return ''
+    ret = ''
+    tmp = []
+    tmp += l
+    length = len(tmp)
+    for i in range(length):
+        value = tmp.pop(0)
+        if value not in tmp:
+            ret += ' ' + value
+    ret += ' '
+    return ret
+
+
 def read_all_from_file(full_path):
     fd = open(full_path, 'rb')
     result = fd.read()
     fd.close()
     return result
+
 
 def fix_path_to_abs(srcs):
     new_srcs = []
@@ -93,6 +118,7 @@ def fix_path_to_abs(srcs):
             continue
         new_srcs.append(core.info.tmake_builtin.tmake_path(src))
     return new_srcs
+
 
 def clean(path):
     """clean build folder"""
@@ -108,24 +134,40 @@ def clean(path):
         or do not have permission when clean, please check'.format(path))
     core.s("clear {} finished".format(path))
 
+
+def parse_dep(dep_name):
+    """
+    解析依赖关系，GNaviUtils、GNaviUtils:9.70.0.1 及 GNaviUtils:9.70.0.1/c 三种形式
+    :param dep_name:
+    :return:
+    """
+    ret = dep_name.split(":")
+    custom_link_name = None
+    if ret and len(ret) == 2:
+        dep_name = ret[0]
+        dep_version = ret[1]
+        # 如果指定了/自定义链接名字，则解析，主要出现在某个第三放的库中有多个子库的情况
+        if "/" in dep_version:
+            split_list = dep_version.split("/")
+            dep_version = split_list[0]
+            custom_link_name = split_list[1]
+    else:
+        dep_name = dep_name
+        dep_version = "local"
+    return dep_name, dep_version, custom_link_name
+
+
 def reset_deps(deps):
     new_deps = []
     if deps and isinstance(deps, list):
         for dep in deps:
             dep_name, dep_version, custom_link_name = parse_dep(dep)
-            if "windows" in core.data.target and dep_version != "local":
-                if core.SHARED_SUFFIX not in dep_name:
-                    ret = is_library_exist(dep_name, dep_version, core.data.target, abcoretor.data.arch, "tmake.xml")
-                    if not ret:
-                        new_name = dep_name + core.SHARED_SUFFIX
-                        ret = is_library_exist(new_name, dep_version, core.data.target, abcoretor.data.arch, "tmake.xml")
-                        if ret:
-                            dep_name = new_name
             if custom_link_name:
                 new_deps.append("{}:{}/{}".format(dep_name, dep_version, custom_link_name))
             else:
                 new_deps.append("{}:{}".format(dep_name, dep_version))
     return new_deps
+
 
 def write_entire_file(filepath, content):
     """write file"""
@@ -133,16 +175,147 @@ def write_entire_file(filepath, content):
     fof.write(content)
     fof.close()
 
+
 def rmtree(path, keepdir=False):
     names = os.listdir(path)
     for name in names:
-        subPath = os.path.join(path, name)
-        if os.path.isdir(subPath):
-            rmtree(subPath, keepdir)
+        sub_path = os.path.join(path, name)
+        if os.path.isdir(sub_path):
+            rmtree(sub_path, keepdir)
         else:
-            os.remove(subPath)
-    if keepdir != True:
+            os.remove(sub_path)
+    if not keepdir:
         os.rmdir(path)
+
+
+def copy(origin_path, target_path):
+    if os.path.isdir(origin_path):
+        copytree(origin_path, target_path, ignore_hide=True)
+    else:
+        shutil.copy(origin_path, target_path)
+
+
+def copytree(src, dst, pattern=None, symlinks=False, ignore=None, ignore_hide=False):
+    names = os.listdir(src)
+    if ignore is not None:
+        ignored_names = ignore(src, names)
+    else:
+        ignored_names = set()
+
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+    errors = []
+    for name in names:
+        if name in ignored_names:
+            continue
+        if ignore_hide and name.startswith("."):
+            continue
+
+        src_name = os.path.join(src, name)
+        dst_name = os.path.join(dst, name)
+        try:
+            if symlinks and os.path.islink(src_name):
+                link_to = os.readlink(src_name)
+                os.symlink(link_to, dst_name)
+            elif os.path.isdir(src_name):
+                copytree(src_name, dst_name, pattern, symlinks, ignore, ignore_hide)
+            else:
+                if pattern is not None:
+                    regex = re.compile(pattern)
+                    basename = os.path.basename(src_name)
+                    if not regex.match(basename):
+                        continue
+                # Will raise a SpecialFileError for unsupported file types
+                shutil.copy2(src_name, dst_name)
+        # catch the Error from the recursive copytree so that we can
+        # continue with other files
+        except shutil.Error, err:
+            errors.extend(err.args[0])
+        except EnvironmentError, why:
+            errors.append((src_name, dst_name, str(why)))
+    try:
+        shutil.copystat(src, dst)
+    except OSError, why:
+        if 'WindowsError' in vars() and shutil.WindowsError is not None and isinstance(why, shutil.WindowsError):
+            # Copying file access times may fail on Windows
+            core.e("WindowsError : {}".format(why))
+        else:
+            errors.append((src, dst, str(why)))
+    if errors:
+        raise shutil.Error, errors
+
+
+def get_libname_on_platform(platform, mode_name, link_style):
+    """
+    获取库的全名字
+    :param platform:
+    :param mode_name:
+    :param link_style: 动态、静态、空三种状态。空代表可执行程序
+    :return:
+    """
+    functions = {
+        core.PLATFORM_WINDOWS: __check_windows,
+        core.PLATFORM_LINUX: __check_linux,
+        core.PLATFORM_MAC: __check_mac,
+        core.PLATFORM_ANDROID: __check_linux,
+        core.PLATFORM_IOS: __check_ios}
+    if platform not in functions:
+        return []
+    return functions.get(platform)(mode_name, link_style)
+
+
+def __check_windows(mod_name, link_style):
+    name = mod_name
+    if link_style == core.CXX_LIBRARY_LINK_STYLE_SHARED:
+        suffix = '.dll'
+        suffix2 = '.lib'
+        suffix3 = '.pdb'
+        # pdb是bin里才有的，export里没有！
+        return ['%s%s' % (name, suffix), '%s%s' % (name, suffix2), '%s%s' % (name, suffix3)]
+    elif link_style == core.CXX_LIBRARY_LINK_STYLE_STATIC:
+        suffix = '.lib'
+    else:
+        return ["{}.exe".format(name)]
+    return ['%s%s' % (name, suffix)]
+
+
+def __check_linux(mod_name, link_style):
+    name = '%s%s' % ('lib', mod_name)
+    if link_style == core.CXX_LIBRARY_LINK_STYLE_SHARED:
+        suffix = '.so'
+    elif link_style == core.CXX_LIBRARY_LINK_STYLE_STATIC:
+        suffix = '.a'
+    else:
+        return [mod_name]
+    return ['%s%s' % (name, suffix)]
+
+
+def __check_mac(mod_name, link_style):
+    name = '%s%s' % ('lib', mod_name)
+    if link_style == core.CXX_LIBRARY_LINK_STYLE_SHARED:
+        suffix = '.dylib'
+    elif link_style == core.CXX_LIBRARY_LINK_STYLE_STATIC:
+        suffix = '.a'
+    else:
+        return [mod_name]
+    return ['%s%s' % (name, suffix)]
+
+
+def __check_ios(mod_name, link_style):
+    name = mod_name
+    if link_style != core.CXX_LIBRARY_LINK_STYLE_FRAMEWORK:
+        name = '%s%s' % ('lib', mod_name)
+
+    if link_style == core.CXX_LIBRARY_LINK_STYLE_SHARED:
+        suffix = '.dylib'
+    elif link_style == core.CXX_LIBRARY_LINK_STYLE_FRAMEWORK:
+        return ['%s.framework' % name, '%s.framework.dSYM' % name]
+    elif link_style == core.CXX_LIBRARY_LINK_STYLE_STATIC:
+        suffix = '.a'
+    else:
+        return [mod_name]
+    return ['%s%s' % (name, suffix)]
+
 
 def get_cmake_prog():
     """get cmake path"""
@@ -152,6 +325,7 @@ def get_cmake_prog():
     if prog != None:
         return prog
     return None
+
 
 #
 # an almost exact copy of the shutil.which() implementation from python3.4
@@ -219,6 +393,7 @@ def which(cmd, mode=os.F_OK | os.X_OK, path=None):
                     return name
     return None
 
+
 def flat_path_list(l):
     if type(l) != list:
         return ""
@@ -250,6 +425,7 @@ def flat_cxx_defines(defines, is_global=True):
         ret += " "
     return ret
 
+
 def build_source_group_by_list(file_list, start_group_name, base_dir):
     gs = {}
     for p in file_list:
@@ -269,6 +445,7 @@ def build_source_group_by_list(file_list, start_group_name, base_dir):
         gs[group_name] = gs[group_name] + " \"" + flat_path_single(p) + "\" "
     return gs
 
+
 def sort_versions(versions, asc=True):
     """
     对集合里的version信息排序，默认升序
@@ -285,9 +462,11 @@ def sort_versions(versions, asc=True):
                 versions[j] = versions[j + 1]
                 versions[j + 1] = temp
 
+
 def flat_path_single(path):
     path = path.replace('\\', '/')
     return path
+
 
 def get_cd_command():
     """
@@ -299,6 +478,7 @@ def get_cd_command():
     else:
         result = " cd "
     return result
+
 
 def cp_exe_deps(acg, target_path):
     """
@@ -314,6 +494,7 @@ def cp_exe_deps(acg, target_path):
     copy_lib_to_target(acg.info.binaries, target_path)
     copy_lib_to_target(acg.info.apps, target_path)
     copy_custom_lib_res_to_target(acg, target_path)
+
 
 def copy_lib_to_target(targets, target_path):
     copyed_set = set()
@@ -358,10 +539,62 @@ def copy_custom_lib_res_to_target(acg, target_path):
         copy_res_to_target(acg, app)
 
 
+def reset_dir_path(dirPath):
+    if os.path.exists(dirPath):
+        shutil.rmtree(dirPath)
+
+
+def copy_res_to_target_dir(resourceItem, build_bin_dir, project_home, project_bin_dir):
+    dir_name_list = []
+    if resourceItem != None:
+        for item in resourceItem.paths:
+            if os.path.isfile(item):
+                print("\n===>Prepare Copy file:" + item)
+                print("\n===>Copy Will Overwrite")
+                print("Check ->" + build_bin_dir)
+                print("Check ->" + project_home)
+                print("Check ->" + project_bin_dir)
+                print("\n")
+                if not os.path.exists(build_bin_dir):
+                    os.mkdir(build_bin_dir)
+                if not os.path.exists(project_home):
+                    os.mkdir(project_home)
+                if not os.path.exists(project_bin_dir):
+                    os.mkdir(project_bin_dir)
+                shutil.copy(item, build_bin_dir)
+                shutil.copy(item, project_home)
+                shutil.copy(item, project_bin_dir)
+            else:
+                index = item.rfind('/')
+                dir_name = item[index + 1: len(item)]
+                build_dest = os.path.join(build_bin_dir, dir_name)  # build bin path
+                project_dest = os.path.join(project_home, dir_name)  # project path
+                project_bin_dest = os.path.join(project_bin_dir, dir_name)  # project bin path
+                build_dest = build_dest.replace('\\', '/')
+                project_dest = project_dest.replace('\\', '/')
+                project_bin_dest = project_bin_dest.replace('\\', '/')
+                print("\n===>Prepare Copy file:" + item)
+                print("\n===>Copy Will Overwrite")
+                print("Check dir: ->" + build_dest)
+                print("Check dir: ->" + project_dest)
+                print("Check dir: ->" + project_bin_dest)
+                if dir_name not in dir_name_list:
+                    reset_dir_path(build_dest)
+                    reset_dir_path(project_dest)
+                    reset_dir_path(project_bin_dest)
+                dir_name_list.append(dir_name)
+                print("Copy To->" + build_dest)
+                copyFiles(item, build_dest)
+                print("Copy To->" + project_dest)
+                copyFiles(item, project_dest)
+                print("Copy To->" + project_bin_dest)
+                copyFiles(item, project_bin_dest)
+
+
 def copy_res_to_target(acg, module):
     resourceItem = acg.resources[module.name]
     copy_res_to_target_dir(resourceItem, acg.info.path_info.build_symbol_path,
-                           acg.info.path_info.project_path, acg.info.path_info.project_bin_path);
+                           acg.info.path_info.project_path, acg.info.path_info.project_bin_path)
     # 拷贝已定义 依赖的dll/dylib 到各运行目录下
     for dir in module.lib_dirs:
         if not (dir.find('.tamke') > -1) and not (dir.find('libraries') > -1):
@@ -385,3 +618,28 @@ def copy_res_to_target(acg, module):
                     shutil.copy(target_lib_abs_name, build_dest)
                     shutil.copy(target_lib_abs_name, project_bin_dest)
 
+
+def copyFiles(src_dir, target_dir):
+    for f in os.listdir(src_dir):
+        sourceF = os.path.join(src_dir, f)
+        targetF = os.path.join(target_dir, f)
+        if os.path.isfile(sourceF):
+            # 创建目录
+            if not os.path.exists(target_dir):
+                os.makedirs(target_dir)
+            # 文件不存在，或者存在但是大小不同，覆盖
+            if not os.path.exists(targetF) or \
+                    (os.path.exists(targetF) and (os.path.getsize(targetF) != os.path.getsize(sourceF))) or \
+                    (os.path.exists(targetF) and (os.path.getmtime(targetF) != os.path.getmtime(sourceF))):
+                # 2进制文件
+                # open(targetF, "wb").write(open(sourceF, "rb").read())
+                fd_s = open(sourceF, "rb")
+                bin_tmp = fd_s.read()
+                fd_s.close()
+                fd_d = open(targetF, "wb")
+                fd_d.write(bin_tmp)
+                fd_d.close()
+            else:
+                pass
+        if os.path.isdir(sourceF):
+            copyFiles(sourceF, targetF)
