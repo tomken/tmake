@@ -6,9 +6,14 @@
 
 @synthesize window;
 
-- (void)applicationDidFinishLaunching:(UIApplication *)application {
-	[HelloIOS class];
-	[window makeKeyAndVisible];
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+//    self.window.backgroundColor = UIColor.whiteColor;
+    
+    HelloIOS* controller = [[HelloIOS alloc] init];
+    self.window.rootViewController = controller;
+    [self.window makeKeyAndVisible];
+    return TRUE;
 }
 
 - (void)dealloc{

@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+
+
+tmake_settings(project_name = 'hello-app')
+
+# 指定编译的源码
+h_dirs = []
+h_dirs.append('.')
+h_dirs.append('../hello-lib')
+
+src_list = []
+src_list.append('HelloAppAppDelegate.h')
+src_list.append('HelloAppAppDelegate.m')
+src_list.append('main.m')
+src_list.append('../hello-lib/HelloIOS.h')
+src_list.append('../hello-lib/HelloIOS.mm')
+src_list.append('../hello-lib/HelloWorld.cpp')
+src_list.append('../hello-lib/HelloWorld.h')
+
+flags = ''
+cxxflags = ''
+cxx_flags = ' -std=c++11 '
+defs = []
+
+os_plist = ''
+
+if TMAKE_TARGET == "mac":
+  defs.append('_GLFW_COCOA')
+  flags += ' -framework Cocoa '
+  flags += ' -framework IOKit '
+  flags += ' -framework CoreFoundation '
+  flags += ' -framework OpenGL '
+  flags += ' -framework CoreAudio '
+  flags += ' -framework AudioToolbox '
+  os_plist = './info.plist.in'
+elif TMAKE_TARGET == "ios":
+  os_plist = 'HelloApp-Info.plist'
+  cxxflags += ' -stdlib=libc++ '
+  cxxflags += ' -fobject-arc -Wno-unused-command-line-argument '
+  flags += ' -framework Foundation '
+  flags += ' -framework UIKit '
+  flags += ' -framework OpenGLES -framework GLKit -framework AVFoundation -framework CoreVideo -framework CoreMedia -framework OpenAL '
+
+if TMAKE_TARGET == "windows":
+  defs.append('_GLFW_WIN32')
+  flags += ' -lgdi32 '
+
+defs.append('ROOT_PATH="' + os.getcwd().replace('\\', "/") + '"')
+
+print src_list
+
+# 指定编译二进制
+tmake_cxx_app(
+  name = 'hello',
+  srcs = src_list,
+  include_dirs = h_dirs,
+  linker_flags = flags,
+  cxx_flags = cxx_flags,
+  defines = defs,
+  deps = [],
+  windows_deps = [
+    'gdi32.lib',
+    'Opengl32',
+  ],
+  plist = tmake_path(os_plist)
+)
+
+

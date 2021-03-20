@@ -5,11 +5,13 @@
 
 - (void)viewDidLoad{
 	UIView *view=[[UIView alloc] initWithFrame:[UIScreen mainScreen].applicationFrame];
-	self.view=view;
-
+	self.view = view;
+    UIColor *color = [UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:1.0];
+    [view setBackgroundColor: color];
+    
 	UILabel *label=[[UILabel alloc] initWithFrame:[UIScreen mainScreen].applicationFrame];
 	[self.view addSubview:label];
-	label.textAlignment=UITextAlignmentCenter;
+//	label.textAlignment=UITextAlignmentCenter;
 	label.text=[self getHello];
 	[label release];
 }

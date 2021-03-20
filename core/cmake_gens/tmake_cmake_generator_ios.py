@@ -14,8 +14,6 @@ PROJECT({0})
 include(CheckIncludeFileCXX)
 CMAKE_MINIMUM_REQUIRED(VERSION {1})
 ADD_CUSTOM_TARGET(LIPO ALL)
-
-
 """
 
 CMAKE_IOS_LIPO_MODULE_TEMPLATE = """
@@ -140,6 +138,8 @@ class CMakeGeneratorIOS(CMakeGenerator):
         toolchain = '"' + self.__get_ios_cmake_toolchain_file() + '" -GXcode '
         self.info.build_vars["CMAKE_TOOLCHAIN_FILE"] = toolchain
         self.info.build_vars["IOS_PLATFORM"] = self.arch.upper()
+        # self.info.build_vars["CMAKE_IOS_DEVELOPER_ROOT"] = "\"/Applications/Xcode.app/Contents/Developer/Platforms/{}.platform/Developer\""\
+        #     .format("iPhoneOS" if self.arch == core.TARGET_CPU_OS else "iPhoneSimulator")
 
     def run_build(self):
         if self.arch == core.TARGET_CPU_FUSION:

@@ -8,8 +8,6 @@ import shutil
 
 import core
 
-from .tmake_arch_helper import ArchHelper
-
 
 def fix_path_style(path):
     """
@@ -58,6 +56,8 @@ def get_archs():
         else:
             raise core.TmakeException("no architecture param. please add '-a' or '--architecture' param!")
 
+    if core.data.target == core.PLATFORM_IOS and arch == core.TARGET_CPU_SIMULATOR_SIMPLE:
+        arch = core.TARGET_CPU_SIMULATOR
     archs = arch.split(core.GLOBAL_SEPARATED)
 
     all_supported_arcs = None
@@ -71,10 +71,8 @@ def get_archs():
         archs = all_supported_arcs
     else:
         # check
-        arch_list = ArchHelper(core.data.arguments.work_path()).get_arch_list()
         for arc in archs:
-            if arc not in all_supported_arcs and arch not in arch_list:
-                all_supported_arcs += arch_list
+            if arc not in all_supported_arcs:
                 raise core.TmakeException('%s is not support , must be in %s' % (arc, all_supported_arcs))
 
     # filt
