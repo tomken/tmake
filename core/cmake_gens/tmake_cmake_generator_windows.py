@@ -27,7 +27,6 @@ class CMakeGeneratorWindows(CMakeGenerator):
     """cmake generator cmake class for Windows"""
 
     def generate_global_common(self):
-        # 解决 Failed to write the updated manifest to the resource of file "bin\GNaviMap.dll". The operation failed.
         # http://blog.sciencenet.cn/blog-419857-649812.html
         # https://github.com/KDAB/GammaRay/issues/458
         self.info.global_defines.append("PLATFORM_WIN32")

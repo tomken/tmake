@@ -94,7 +94,6 @@ def parse(path, parent_project=None, module_name=None):
         body = proj_file.read()
         proj_defines = core.data.arguments.get_opts_by_prefix("-D")
         work_path = os.path.dirname(full_path)
-        new_project.parse_ci_config(work_path)
         feature_macro_dict = new_project.get_feature_macro_dict()
         feature_key = feature
         if feature_macro_dict and feature_key and feature_key in feature_macro_dict:

@@ -27,6 +27,7 @@ def exec_tmake_command(arguments):
     """execCommand"""
     command = arguments.tmake_cmd()
     import_cmd = "import core.cmd.tmake_" + command
+    print('cmd:' + import_cmd)
     call_cmd = "core.cmd.tmake_" + command + ".main()"
     try:
         exec import_cmd
@@ -49,7 +50,7 @@ def get_archs():
         if core.data.target == core.PLATFORM_ANDROID:
             arch = core.ANDROID_DEFAULT_CPU
         elif core.data.target == core.PLATFORM_IOS:
-            arch = core.TARGET_CPU_ALL
+            arch = core.TARGET_CPU_OS
         elif core.data.target == core.PLATFORM_LINUX:
             arch = core.TARGET_CPU_UBUNTU64
         elif core.data.target == core.data.platform.host:
@@ -137,7 +138,7 @@ def clean(path):
 
 def parse_dep(dep_name):
     """
-    解析依赖关系，GNaviUtils、GNaviUtils:9.70.0.1 及 GNaviUtils:9.70.0.1/c 三种形式
+    解析依赖关系，xxx、xxx:9.70.0.1 及 xxx:9.70.0.1/c 三种形式
     :param dep_name:
     :return:
     """

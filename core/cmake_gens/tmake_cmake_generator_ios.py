@@ -111,7 +111,7 @@ class CMakeGeneratorIOS(CMakeGenerator):
             bundle_version = "1"
             if "MACOSX_FRAMEWORK_BUNDLE_VERSION" in module.framework_properties:
                 bundle_version = module.framework_properties["MACOSX_FRAMEWORK_BUNDLE_VERSION"]
-            bundle_id = "com.amap.core.framework"
+            bundle_id = "com.core.framework"
             if "MACOSX_FRAMEWORK_IDENTIFIER" in module.framework_properties:
                 bundle_id = module.framework_properties["MACOSX_FRAMEWORK_IDENTIFIER"]
             plist = ""

@@ -50,7 +50,7 @@ class Data(object):
 
         # 对全局的-v -V的支持
         if self.arguments.has_flag("v"):
-            log.TMAKE_VERBOSE = True
+            TMAKE_VERBOSE = True
         if self.arguments.has_flag("V"):
             os.putenv('VERBOSE', '1')
 
@@ -61,35 +61,35 @@ class Data(object):
         log_s = self.arguments.has_flag('logs')
 
         if log_d:
-            log.TMAKE_LOG_DEBUG = True
-            log.TMAKE_LOG_INFO = False
-            log.TMAKE_LOG_ERROR = False
-            log.TMAKE_LOG_SUCCESS = False
+            TMAKE_LOG_DEBUG = True
+            TMAKE_LOG_INFO = False
+            TMAKE_LOG_ERROR = False
+            TMAKE_LOG_SUCCESS = False
 
 
         if log_i:
-            log.TMAKE_LOG_INFO = True
+            TMAKE_LOG_INFO = True
             if log_d == False:
-                log.TMAKE_LOG_DEBUG = False
-            log.TMAKE_LOG_ERROR = False
-            log.TMAKE_LOG_SUCCESS = False
+                TMAKE_LOG_DEBUG = False
+            TMAKE_LOG_ERROR = False
+            TMAKE_LOG_SUCCESS = False
 
-        if log_e:
-            log.TMAKE_LOG_ERROR = True
-            if log_d == False:
-                log.TMAKE_LOG_DEBUG = False
-            if log_i == False:
-                log.TMAKE_LOG_INFO = False
-            log.TMAKE_LOG_SUCCESS = False
+        # if log_e:
+        #     TMAKE_LOG_ERROR = True
+        #     if log_d == False:
+        #         log.TMAKE_LOG_DEBUG = False
+        #     if log_i == False:
+        #         log.TMAKE_LOG_INFO = False
+        #     log.TMAKE_LOG_SUCCESS = False
 
-        if log_s:
-            log.TMAKE_LOG_SUCCESS = True
-            if log_d == False:
-                log.TMAKE_LOG_DEBUG = False
-            if log_i == False:
-                log.TMAKE_LOG_INFO = False
-            if log_e == False:
-                log.TMAKE_LOG_ERROR = False
+        # if log_s:
+        #     log.TMAKE_LOG_SUCCESS = True
+        #     if log_d == False:
+        #         log.TMAKE_LOG_DEBUG = False
+        #     if log_i == False:
+        #         log.TMAKE_LOG_INFO = False
+        #     if log_e == False:
+        #         log.TMAKE_LOG_ERROR = False
 
     def __parse_project_deps(self, project, is_root):
         """

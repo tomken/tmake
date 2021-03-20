@@ -7,6 +7,7 @@ import os
 import shlex
 import subprocess
 from core import PlatformInfo
+from core.utils.PropertiesParser import PropertiesParser
 from core.utils.tmake_cmake import *
 
 
@@ -68,8 +69,7 @@ class CommandProject(core.Command):
             custom_asset_target = ''
             # studio不需要生成project信息，只修改build.gradle文件。
             if self.param_ide_name.startswith("studio"):
-                pass
-                # self.__modify_studio_project_file(acg.info.path_info.project_path)
+                self.__modify_studio_project_file(acg.info.path_info.project_path)
                 # custom_asset_target = os.path.join(tmake_path(self.template_folder), "app/src/main/assets")
             else:
                 if not core.data.use_cmakelist:
@@ -177,6 +177,16 @@ class CommandProject(core.Command):
         core.s("open cmd: {}".format(cmd))
         return cmd
 
+    def __modify_studio_project_file(self, project_path):
+        if not self.template_folder or not self.param_ide_name.endswith("studio"):
+            return
+
+        cmake_path = os.path.join(project_path, "CMakeLists.txt")
+        gradle_properties = os.path.join(self.template_folder, "gradle.properties")
+        properties_parser = PropertiesParser()
+        properties_parser.read(gradle_properties)
+        properties_parser.add("CMAKE_PATH", cmake_path)
+        properties_parser.save()
 
 def main():
     """plugin main entry"""

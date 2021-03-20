@@ -11,8 +11,8 @@ from core.utils import tmake_process_utils as process_utils
 
 class CommandRun(core.Command):
     """
-    abtor run command class
-    abtor run [test_name|all] [-d directory] [-t target] [-a arc] [-c config] [-v|-V]
+    tmake run command class
+    tmake run [test_name|all] [-d directory] [-t target] [-a arc] [-c config] [-v|-V]
     不传默认为 all
     """
 
@@ -40,7 +40,7 @@ class CommandRun(core.Command):
                         raise core.TmakeException('param %s is error , please check !' % argv[0])
                 if "all" in self.binary_set:
                     raise core.TmakeException('\'all\' is run all tests task program for all projects , '
-                                               '%s Spaced not required' % abtor.GLOBAL_SEPARATED)
+                                               '%s Spaced not required' % tmake.GLOBAL_SEPARATED)
         else:
             self.run_all = True
 
@@ -75,7 +75,7 @@ class CommandRun(core.Command):
             core.v('command : {} , cwd : {} , args : {}'.format(command, cwd, args))
             if len(command) <= 0:
                 raise core.TmakeException(
-                    '[Possible error] abtor_host_tester_task : {} command property configuration error !!!'.format(
+                    '[Possible error] tmake_host_tester_task : {} command property configuration error !!!'.format(
                         task))
             cmd_check = re.split(' *', command)
             core.v('pre   cmd_check : {}'.format(cmd_check))

@@ -55,8 +55,7 @@ class CommandHelp(core.Command):
 
     def run(self):
         """tmake help entry"""
-        logstr = "\nThe official website: http://tmake.amap.com/\n"
-        logstr += "Usage:\n    tmake command command_paramters  [-D[-D][...]] [-opt] [--opt]"
+        logstr = "Usage:\n    tmake command command_paramters  [-D[-D][...]] [-opt] [--opt]"
         cur_dir = os.path.split(os.path.realpath(__file__))[0]
         cmd_list = os.listdir(cur_dir)
         logstr += "\n    ----command list----"

@@ -7,7 +7,6 @@ import re
 
 import core
 from core.tmake_exception import SkipException
-from core.utils import comm_utils
 
 from .tmake_cmake_generator import CMakeGenerator
 
@@ -108,12 +107,12 @@ class CMakeGeneratorAndroid(CMakeGenerator):
                 toolchain_path = ""
                 if major_version < 12:
                     core.e('!!!!!!!!ndk version < 12 , cant debug code !!!!!!!! ')
-                elif major_version == 12:
-                    toolchain_path = os.path.join(comm_utils.get_cmake_download_root(),
-                                                  'toolchain/android-cmake/android.toolchain_debug_r12.cmake')
-                elif major_version == 13:
-                    toolchain_path = os.path.join(comm_utils.get_cmake_download_root(),
-                                                  'toolchain/android-cmake/android.toolchain_debug_r13.cmake')
+                # elif major_version == 12:
+                #     toolchain_path = os.path.join(comm_utils.get_cmake_download_root(),
+                #                                   'toolchain/android-cmake/android.toolchain_debug_r12.cmake')
+                # elif major_version == 13:
+                #     toolchain_path = os.path.join(comm_utils.get_cmake_download_root(),
+                #                                   'toolchain/android-cmake/android.toolchain_debug_r13.cmake')
                 else:
                     toolchain_path = os.path.join(self.__get_android_ndk(), 'build/cmake/android.toolchain.cmake')
                 self.info.build_vars[CMAKE_TOOLCHAIN_FILE_KEY] = '"' + toolchain_path + '" '

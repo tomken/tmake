@@ -80,7 +80,7 @@ def tmake_deps_info(dep_name):
     """
     返回从DEPS.conf中读取的版本信息
     :param dep_name:
-    :return: 类似这种格式 GNaviMap:9.18.100.34
+    :return: 类似这种格式 xxxMap:9.18.100.34
     """
     # 动态库和静态库同相同的版本。
     fix_dep_name = dep_name.replace(core.SHARED_SUFFIX, "")

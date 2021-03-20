@@ -576,7 +576,7 @@ class DepsManager(object):
             for item in [core.SHARED_SUFFIX, core.BINARY_SUFFIX, core.FRAMEWORK_SUFFIX]:
                 fix_name = fix_name.replace(item, "")
 
-            # 如果GNaviDice及GNaviDice_shared同时依赖，版本不一样也报冲突
+            # 如果xxxDice及xxxDice_shared同时依赖，版本不一样也报冲突
             type_version_set = None
             if fix_name in self.__deps_dict:
                 type_version_set = set(self.__deps_dict[fix_name].keys() + vers.keys())

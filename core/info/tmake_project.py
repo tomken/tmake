@@ -80,7 +80,7 @@ class ProjectInfo(object):
         # 依赖的git源码
         self.git_deps = []  # 里面是{"git": "", "tag": ""} 这种数据
         # 依赖的库信息
-        self.library_deps = {}  # 里面是{"GNaviUtils": "2.0.0"} 这种数据
+        self.library_deps = {}  # 里面是{"xxx": "2.0.0"} 这种数据
 
         self.libraries = {}
         self.binaries = {}
@@ -188,77 +188,7 @@ class ProjectInfo(object):
                 is_find = True
                 break
         return is_find
-
-    def parse_ci_config(self, project_path):
-        """
-        解析CI_CONFIG.json
-        :param project_path:  工程路径
-        :return:
-        """
-        self.__parse_ci_config_aop_info(project_path)
-        self.__parse_ci_config_feature_info(project_path)
-
-    def __parse_ci_config_aop_info(self, project_path):
-        """
-        解析CI_CONFIG.json中的aop配置
-        :param project_path:  工程路径
-        :return:
-        """
-        core.i("parse aop config... {}".format(project_path))
-        self.work_path = project_path
-        # 检测ci_config.json文件是否存在
-        ci_config_file_path = os.path.join(project_path, self.ci_config_file)
-        if not os.path.exists(ci_config_file_path):
-            core.e("{} not found in {}, skip!".format(self.ci_config_file, project_path))
-            return
-
-        # 加载ci_config.json内容
-        try:
-            ci_config_dict = json.loads(tmake_utils.read_all_from_file(ci_config_file_path))
-        except Exception, e:
-            traceback.print_exc()
-            raise core.TmakeException("parse [{}] error, {}".format(self.ci_config_file, repr(e)))
-
-        if ProjectInfo.AOP_CONFIG_KEY_WORD in ci_config_dict:
-            self.aop_config_dict = ci_config_dict[ProjectInfo.AOP_CONFIG_KEY_WORD]
-        else:
-            core.i("`{}` not found in {}, skip!".format(self.modules_key_word, self.ci_config_file))
-        core.i("parse aop config finished {}".format(project_path))
-
-    def __parse_ci_config_feature_info(self, work_path):
-        """
-        解析CI_CONFIG.json中的Feature化配置, 生成Feature头文件
-        :param work_path:  工作路径
-        :return:
-        """
-        module = core.data.arguments.get_opt('-f')
-        if module is None:
-            return
-
-        core.i("update feather headers... {}".format(work_path))
-        self.work_path = work_path
-        # 校验文件
-        source_file_path = os.path.join(work_path, self.ci_config_file)
-        if not os.path.exists(source_file_path):
-            core.e("{} not found in {}, skip!".format(self.ci_config_file, work_path))
-            return
-
-        # 解析字典内容
-        ci_config_dict = {}
-        try:
-            ci_config_dict = json.loads(tmake_utils.read_all_from_file(source_file_path))
-        except Exception, e:
-            traceback.print_exc()
-            raise core.TmakeException("parse [{}] error, {}".format(self.ci_config_file, repr(e)))
-        core.v("ci_config_dict = {} ...".format(ci_config_dict))
-
-        if self.modules_key_word not in ci_config_dict:
-            core.TmakeException("`{}` not found in {}, skip!".format(self.modules_key_word, self.ci_config_file))
-            return
-
-        feature_dict, arch_dict, support_arch_dict = self.__get_feature_info(ci_config_dict)
-        self.__generate_headers(work_path, feature_dict)
-
+        
     def __generate_headers(self, dir, feature_dict):
         """
         覆盖式写入宏定义头文件

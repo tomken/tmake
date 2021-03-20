@@ -33,9 +33,12 @@ class CMakeGeneratorOSX(CMakeGenerator):
     def create_build_vars(self):
         arch = 'i386' if self.arch == core.TARGET_CPU_X86 else 'x86_64'
         self.info.build_vars["CMAKE_OSX_ARCHITECTURES"] = arch
+        self.info.build_vars["CMAKE_C_COMPILER"] = 'clang'
+        self.info.build_vars["CMAKE_CXX_COMPILER"] = 'clang++'
 
     def generate_module_common(self, module):
         module.include_dirs.append("/usr/local/include")
+        module.lib_dirs.append("/usr/local/lib")
         return CMakeGenerator.generate_module_common(self, module)
 
     def generate_global_common(self):
