@@ -5,7 +5,7 @@ import os
 from collections import OrderedDict
 
 import core
-from core.utils import comm_utils
+from core.utils import tmake_utils
 
 from .tmake_cmake_generator import CMakeGenerator
 
@@ -14,6 +14,8 @@ PROJECT({0})
 include(CheckIncludeFileCXX)
 CMAKE_MINIMUM_REQUIRED(VERSION {1})
 ADD_CUSTOM_TARGET(LIPO ALL)
+
+
 """
 
 CMAKE_IOS_LIPO_MODULE_TEMPLATE = """
@@ -56,7 +58,7 @@ class CMakeGeneratorIOS(CMakeGenerator):
         return common_cmd
 
     def generate(self):
-        #用于调换顺序
+        # 用于调换顺序
         remove_default_flags = core.data.current_project.remove_default_flags
         # xcode中显示的支持版本为7.0
         if remove_default_flags == False:
@@ -149,8 +151,7 @@ class CMakeGeneratorIOS(CMakeGenerator):
             return CMakeGenerator.run_build(self)
 
     def __get_ios_cmake_toolchain_file(self):
-        return os.path.join(comm_utils.get_cmake_download_root(),
-                            'toolchain/ios-cmake/toolchain/iOS.cmake')
+        return os.path.join(core.data.arguments.tmake_path(), 'toolchain/ios-cmake/toolchain/iOS.cmake')
 
     def generate_cmake_lipo_text(self):
         """
@@ -162,8 +163,8 @@ class CMakeGeneratorIOS(CMakeGenerator):
         target_names = ""
         for module in self.info.libraries:
             # lipo library in outout path
-            lib_file_name_list = comm_utils.get_libname_on_platform(self.info.build_target, module.name,
-                                                                    module.link_style)
+            lib_file_name_list = tmake_utils.get_libname_on_platform(self.info.build_target, module.name,
+                                                                     module.link_style)
             lib_file_name = lib_file_name_list[0]
             params_dict = OrderedDict()
             params_dict[self.path.get_arch_output_path] = module.name
