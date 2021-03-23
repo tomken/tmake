@@ -334,7 +334,7 @@ class CMakeGenerator(object):
         qt_components = " ".join(module.qt_components)
         qt_ui = tmake_utils.flat_path_list(module.qt_ui)
         qt_moc_headers = tmake_utils.flat_path_list(module.qt_moc_headers)
-        ret_str = core.CMAKE_QT_MODULE_TEMPLATE.format(qt_components, module.name, qt_moc_headers, qt_ui)
+        ret_str = CMAKE_QT_MODULE_TEMPLATE.format(qt_components, module.name, qt_moc_headers, qt_ui)
         return ret_str
 
     def __generate_module_link_flags(self, module):
@@ -607,7 +607,7 @@ class CMakeGenerator(object):
 
         # 如果有资源，则指定资源信息
         if module.name in self.resources:
-            cmake_text += core.CMAKE_MODULE_ADD_RES_TEMPLATE.format(module.name,
+            cmake_text += CMAKE_MODULE_ADD_RES_TEMPLATE.format(module.name,
                                                                      self.resources[module.name].flat_path,
                                                                      module.name, module.name)
         if self.info.is_project_cmd:
@@ -938,12 +938,12 @@ class CMakeGenerator(object):
                 arguments_info.argv[1],
                 arguments_str)
             core.i(command)
-            if cond == core.SCRIPT_PRE_BUILD:
-                cmake_text += core.CMAKE_MODULE_PRE_BUILD_TEMPLATE.format(fake_target,
+            if cond == SCRIPT_PRE_BUILD:
+                cmake_text += CMAKE_MODULE_PRE_BUILD_TEMPLATE.format(fake_target,
                                                                            command,
                                                                            module.name)
             else:
-                cmake_text += core.CMAKE_MODULE_PRE_LINK_OR_POST_BUILD_TEMPLATE.format(module.name,
+                cmake_text += CMAKE_MODULE_PRE_LINK_OR_POST_BUILD_TEMPLATE.format(module.name,
                                                                                         str.upper(cond),
                                                                                         command)
         return cmake_text
