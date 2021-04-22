@@ -98,6 +98,23 @@ class CommandProject(core.Command):
         self.param_ide_name = argv[0]
         core.data.environment.update_vs_tool_name(self.param_ide_name)
 
+    def find_project_name(self, src_dir, proj_suffix):
+        lib_name = "proj"
+        for f in os.listdir(src_dir):
+            sourceF = os.path.join(src_dir, f)
+            if os.path.isfile(sourceF):
+                suffix = os.path.splitext(sourceF)[1]
+                lib_name = sourceF[sourceF.rfind("/") + 1:]
+                if suffix and suffix.lower() == proj_suffix:
+                    return lib_name
+            if os.path.isdir(sourceF):
+                suffix = os.path.splitext(sourceF)[1]
+                lib_name = sourceF[sourceF.rfind("/") + 1:]
+                if suffix and suffix.lower() == proj_suffix:
+                    return lib_name.replace(suffix, "")
+                self.find_project_name(sourceF, proj_suffix)
+        return lib_name
+
     def __open_project(self, last_acg):
         """
         打开项目
