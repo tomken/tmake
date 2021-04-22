@@ -5,7 +5,8 @@ import sys
 import os
 
 import core
-
+from core.cmake_gens.tmake_cmakelists import recover_cmakelists, change_cmakelists_output
+from core.info.tmake_path_info import PathInfo
 from .tmake_arguments import ArgumentsInfo
 from .tmake_platform import PlatformInfo
 from .tmake_environment import EnvironmentInfo
@@ -113,10 +114,11 @@ class Data(object):
     def parse_project(self):
         """parse tmake.proj"""
         # load WORK_PATH
+        from core.utils import tmake_project_parser
         script = os.path.join(core.data.arguments.work_path(), "tmake.proj")
         if os.path.exists(script):
             core.v("project path=" + script)
-            core.data.project = core.utils.tmake_project_parser.parse(script)
+            core.data.project = tmake_project_parser.parse(script)
             self.__parse_project_deps(core.data.project, True)
             # 依赖关系处理完毕逻辑
             core.data.deps_mgr.parse_finish()
@@ -127,7 +129,7 @@ class Data(object):
             core.data.use_cmakelist = True
             core.v("project path=" + script)
 
-            core.data.project = core.tmake_project_parser.parse(script)
+            core.data.project = tmake_project_parser.parse(script)
             if core.data.arguments.tmake_cmd() == "project":
                 path_info = PathInfo(self.arch, core.data.arguments.work_path())
                 base_path = path_info.project_path
