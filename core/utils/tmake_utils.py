@@ -188,6 +188,9 @@ def rmtree(path, keepdir=False):
 
 
 def copy(origin_path, target_path):
+    target_dir = os.path.dirname(target_path)
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
     if os.path.isdir(origin_path):
         copytree(origin_path, target_path, ignore_hide=True)
     else:
