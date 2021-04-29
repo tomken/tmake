@@ -645,3 +645,36 @@ def copyFiles(src_dir, target_dir):
                 pass
         if os.path.isdir(sourceF):
             copyFiles(sourceF, targetF)
+
+
+def set_symlink(ori_path, target_path):
+    """
+    设置软连接
+    :param ori_path:
+    :param target_path:
+    :return:
+    """
+    if core.PlatformInfo.is_windows_system():
+        raise core.TmakeException("windows不应该执行到创建软连接操作！")
+    # 解决Cannot call rmtree on a symbolic link 问题，islink这个判断有的平台不准确
+    try:
+        os.remove(target_path)
+    except Exception, e:
+        pass
+    if os.path.exists(target_path):
+        if os.path.islink(target_path) or os.path.isfile(target_path):
+            os.remove(target_path)
+        else:
+            shutil.rmtree(target_path)
+    # 设置软连接可能存在并发，增加保护
+    try:
+        os.symlink(ori_path, target_path)
+    except Exception, e:
+        err_mess = e.message
+        if "File exists" in err_mess:
+            pass
+        else:
+            raise core.TmakeException("symlink failed!  src:{}, dst:{}, err:{}".format(ori_path,
+                                                                                       target_path,
+                                                                                       err_mess))
+

@@ -264,8 +264,8 @@ class CMakeGenerator(object):
                 if os.path.exists(link_path) and not clean_bundle:
                     tmake_utils.reset_dir_path(link_path)
                 clean_bundle = True
-                tmake_utils.copyFiles(tmake_path(bundle), link_path)
-                #tmake_utils.set_symlink(tmake_path(bundle), link_path)
+                # tmake_utils.copyFiles(tmake_path(bundle), link_path)
+                tmake_utils.set_symlink(tmake_path(bundle), link_path)
                 source_list.append(link_path)
         if source_list:
             res = tmake_utils.flat_path_list(tmake_utils.fix_path_to_abs(set(source_list)))
