@@ -542,6 +542,8 @@ def copy_custom_lib_res_to_target(acg, target_path):
 
 
 def reset_dir_path(dirPath):
+    if os.path.islink(dirPath):
+        os.unlink(dirPath)
     if os.path.exists(dirPath):
         shutil.rmtree(dirPath)
 
