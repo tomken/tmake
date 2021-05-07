@@ -507,7 +507,7 @@ class DepsManager(object):
                     path_info = PathInfo(self.__arch, project.folder)
                     mod.root_path = path_info.get_build_path()
                     library_name = lib_name.replace(core.SHARED_SUFFIX, "").replace(core.BINARY_SUFFIX, "")
-                    mod.include_dir = [path_info.get_local_export_include_path(library_name)]
+                    mod.include_dir = [] # [path_info.get_local_export_include_path(library_name)]
                 self.set_module(mod)
                 deps = []
                 if 'deps' in library:

@@ -7,6 +7,7 @@ import os
 import shlex
 import subprocess
 from core import PlatformInfo
+from core.info.tmake_builtin import tmake_path
 from core.utils.PropertiesParser import PropertiesParser
 from core.utils.tmake_cmake import *
 
@@ -70,7 +71,7 @@ class CommandProject(core.Command):
             # studio不需要生成project信息，只修改build.gradle文件。
             if self.param_ide_name.startswith("studio"):
                 self.__modify_studio_project_file(acg.info.path_info.project_path)
-                # custom_asset_target = os.path.join(tmake_path(self.template_folder), "app/src/main/assets")
+                custom_asset_target = os.path.join(tmake_path(self.template_folder), "app/src/main/assets")
             else:
                 if not core.data.use_cmakelist:
                     cmake_list_path = last_acg.path.project_path
@@ -78,7 +79,7 @@ class CommandProject(core.Command):
                     cmake_list_path = last_acg.path.project_folder
                 run_cmake_project(last_acg, cmake_list_path, self.param_ide_name)
             # 复制资源到指定目录
-            # self.__copy_assets_to_custom_target(last_acg, custom_asset_target)
+            self.__copy_assets_to_custom_target(last_acg, custom_asset_target)
             # # 复制动态库
             # comm_utils.cp_exe_deps(acg, acg.info.path_info.project_bin_path)
             # # 打开
@@ -204,6 +205,43 @@ class CommandProject(core.Command):
         properties_parser.read(gradle_properties)
         properties_parser.add("CMAKE_PATH", cmake_path)
         properties_parser.save()
+
+    def __copy_assets_to_custom_target(self, acg, target_path):
+        """
+        复制资源文件
+        :param acg:
+        :param target_path: 指定的复制目录，可以为空
+        :return:
+        """
+        for item in acg.info.resources:
+            resource_list = []
+            if item.files:
+                for key, value in item.files.items():
+                    resource_list += value
+
+            if item.bundles:
+                for bundle in item.bundles:
+                    full_path = tmake_path(bundle)
+                    if os.path.exists(full_path):
+                        resource_list.append(full_path)
+            item_copy_target = target_path
+            if not item_copy_target and self.param_ide_name in item.ide_target:
+                item_copy_target = tmake_path(item.ide_target[self.param_ide_name])
+
+            if not item_copy_target:
+                continue
+            # 目标目录不存在就创建
+            if not os.path.exists(item_copy_target):
+                os.makedirs(item_copy_target)
+            # 执行copy
+            for resource_item in resource_list:
+                full_path = tmake_path(resource_item)
+                if full_path == item_copy_target:
+                    continue
+                core.i('IDE Copy: {}->{}'.format(full_path, item_copy_target))
+                if os.path.exists(full_path):
+                    tmake_utils.copy(full_path, item_copy_target)
+
 
 def main():
     """plugin main entry"""
